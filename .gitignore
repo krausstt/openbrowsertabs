@@ -1,0 +1,22 @@
+# =============================================================
+# PRIVACY: personal URL collections must NEVER be committed.
+# All raw exports and derived datasets live in data/ (ignored).
+# =============================================================
+data/
+*.pdf
+dataset.json
+raw_urls.json
+*.jsonl
+*.sqlite
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
