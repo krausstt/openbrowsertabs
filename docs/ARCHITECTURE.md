@@ -47,7 +47,9 @@ Kernerkenntnisse aus der Validierung mit 4 realen Snapshots (2.562 Roh-URLs
   aktuellen Stand prüfen)
 - Share-Target: `ACTION_SEND`-Intent-Filter (text/plain) → sofort in
   lokale DB, WorkManager-Job für Enrichment einreihen
-- Lokale DB: **SQLDelight** (KMP-fähig, SQL-first — passt zum Graph-Schema)
+- Lokale DB: **SQLDelight** (KMP-fähig, SQL-first — passt zum Graph-Schema);
+  das MVP nutzt vorerst bewusst plain SQLite ohne Codegen (`LinkStore`),
+  der Tausch ist hinter der kleinen Store-API gekapselt
 - Hintergrund: WorkManager (Android) mit Constraints (unmetered/charging
   für Batch-Enrichment)
 

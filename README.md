@@ -48,8 +48,9 @@ Dedup-Statistik und Kategorien-Verteilung.
   realen Tab-Exporten, Explorer-Prototyp
 - **Phase 2:** Anreicherung — Titel/Metadaten-Fetch, LLM-Kategorisierung,
   Embeddings für Ähnlichkeits-Kanten, Relevanz-Scoring mit Zeit-Decay
-- **Phase 3:** Android-App (Kotlin Multiplatform) mit Share-Target,
-  lokaler Queue und Hintergrund-Enrichment (Cloud / Home-Lab / on-device)
+- **Phase 3 (MVP in Arbeit):** Android-App mit Share-Target, lokaler
+  SQLite-DB und Enrichment-Queue — siehe `app/` + `core/`; Build & APK via
+  GitHub Actions (Details: `docs/sessions/2026-07-02-android-core.md`)
 - **Phase 4:** iPad-Port via Compose Multiplatform
 
 Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)

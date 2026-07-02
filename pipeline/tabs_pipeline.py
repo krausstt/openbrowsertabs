@@ -56,9 +56,12 @@ def parse_pdf(path: Path):
 
 
 # ------------------------------------------------------------- normalization
+# prefix families (utm_*, gad_*) or exact-match names — never bare prefixes,
+# otherwise "si" would also strip legitimate params like "size"
 TRACKING_PARAMS = re.compile(
-    r"^(utm_|gclid|gad_|gbraid|wbraid|fbclid|mc_cid|mc_eid|igshid|si|ref_src"
-    r"|PROVID|cmpid|smid|sh|ncid|guccounter|guce_referrer|_hsenc|_hsmi)", re.I)
+    r"^(utm_|gad_"
+    r"|(gclid|gbraid|wbraid|fbclid|mc_cid|mc_eid|igshid|si|ref_src"
+    r"|PROVID|cmpid|smid|sh|ncid|guccounter|guce_referrer|_hsenc|_hsmi)$)", re.I)
 AMP_HOST = re.compile(r"^(www[-.])?([a-z0-9-]+)\.cdn\.ampproject\.org$", re.I)
 
 
