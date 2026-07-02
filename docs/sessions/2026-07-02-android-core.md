@@ -96,6 +96,30 @@ oft harte Zeilenumbrüche *mitten in* langen URLs — die zerreißt der
 Import. Für PDF-Exporte bleibt `pipeline/tabs_pipeline.py` der richtige
 Weg (repariert umbrochene URLs anhand der Listennummerierung).
 
+## Nachtrag: share.google-Problem (Chrome-Shares)
+
+Chrome/Google-App teilen statt der echten URL oft einen
+`share.google`-Kurzlink (Googles Tracking-Shortener). Anders als bei AMP
+steckt das Ziel **nicht** in der URL — Auflösung braucht einen HTTP-Request.
+Zweigleisige Lösung:
+
+1. **Einstellung (sofort):** Google-App → Profilbild → Einstellungen →
+   Allgemein → „Links zu Webseiten kürzen" **deaktivieren**. Gilt für
+   Shares aus Google-App/Discover/Suche.
+2. **In der App (robust):** Neuer `RedirectResolver` folgt beim Speichern
+   den Location-Headern bekannter Shortener (`share.google`, `goo.gl`,
+   `bit.ly`, `t.co`, `amzn.to`, …; max. 5 Hops, 4 s Timeout) und speichert
+   die aufgelöste Ziel-URL — Original-Kurzlink bleibt als Provenienz
+   erhalten. Schlägt die Auflösung fehl (offline/Interstitial), wird der
+   Kurzlink gespeichert und über das `pending_enrichment`-Flag später von
+   der Enrichment-Phase nachaufgelöst. Das ist bewusst das erste vorgezogene
+   Stück Phase 2.
+
+Gratis dazu: `google.com/url?q=…`-Klick-Tracking-Wrapper werden jetzt
+**offline** entpackt (das Ziel steckt dort in der URL) — in Python-Pipeline
+und Kotlin-Core synchron, mit Cross-Validation-Tests. Die App hat dafür
+neu die INTERNET-Permission (einzige Permission der App).
+
 ## Offene Punkte (nächste Sessions)
 
 - [ ] **Phase 2 Enrichment** (wartet auf dein Home-Lab): FastAPI-Service,

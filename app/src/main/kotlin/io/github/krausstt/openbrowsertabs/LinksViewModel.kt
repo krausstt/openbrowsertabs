@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.krausstt.openbrowsertabs.core.LinkParser
+import io.github.krausstt.openbrowsertabs.core.LinkResolution
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.data.LinkStore
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +63,7 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
     fun addFromText(text: String) {
         viewModelScope.launch {
             val (added, seenAgain) = withContext(Dispatchers.IO) {
-                val links = LinkParser.parse(text)
+                val links = LinkParser.parse(text).map { LinkResolution.resolveIfShortened(it) }
                 var a = 0
                 var u = 0
                 links.forEach { if (store.upsertSighting(it, title = null)) a++ else u++ }

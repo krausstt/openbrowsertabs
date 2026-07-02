@@ -66,8 +66,13 @@ AMP_HOST = re.compile(r"^(www[-.])?([a-z0-9-]+)\.cdn\.ampproject\.org$", re.I)
 
 
 def unwrap_amp(url: str) -> str:
-    """Recover the canonical URL from Google AMP-cache links."""
+    """Recover the canonical URL from Google AMP-cache and redirect links."""
     s = urlsplit(url)
+    # google.com/url?q=<target> click-tracking wrapper carries the target inline
+    if s.netloc.lower().endswith("google.com") and s.path == "/url":
+        for k, v in parse_qsl(s.query):
+            if k in ("q", "url") and v.startswith("http"):
+                return v
     m = re.match(r"^/amp/s/(.+)$", s.path)
     if s.netloc.lower().endswith("google.com") and m:
         rest = m.group(1)

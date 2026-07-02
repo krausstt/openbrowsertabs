@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import io.github.krausstt.openbrowsertabs.core.LinkParser
+import io.github.krausstt.openbrowsertabs.core.LinkResolution
 import io.github.krausstt.openbrowsertabs.data.LinkStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +34,7 @@ class ShareReceiverActivity : ComponentActivity() {
             val text = intent?.getStringExtra(Intent.EXTRA_TEXT)
                 ?.takeIf { it.isNotBlank() }
                 ?: readSharedTextFile()
-            val links = LinkParser.parse(text)
+            val links = LinkParser.parse(text).map { LinkResolution.resolveIfShortened(it) }
 
             if (links.isEmpty()) {
                 withContext(Dispatchers.Main) {

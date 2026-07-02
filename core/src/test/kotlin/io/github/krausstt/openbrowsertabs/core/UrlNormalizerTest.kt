@@ -82,4 +82,18 @@ class UrlNormalizerTest {
     @Test
     fun `bare host normalizes to root path`() =
         check("https://www.example.com", "https://example.com/")
+
+    @Test
+    fun `unwraps google url click-tracking wrapper with encoded target`() =
+        check(
+            "https://www.google.com/url?q=https%3A%2F%2Fwww.example.org%2Fnews%2Fstory%3Fid%3D7&sa=D&source=editors",
+            "https://example.org/news/story?id=7",
+        )
+
+    @Test
+    fun `unwraps google url click-tracking wrapper with plain target`() =
+        check(
+            "https://www.google.com/url?q=https://example.net/a/b&usg=xyz",
+            "https://example.net/a/b",
+        )
 }
