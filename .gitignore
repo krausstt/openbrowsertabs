@@ -1,8 +1,10 @@
 # =============================================================
 # PRIVACY: personal URL collections must NEVER be committed.
-# All raw exports and derived datasets live in data/ (ignored).
+# All raw exports and derived datasets live in /data/ (ignored).
+# Leading slash: only the top-level data dir — NOT source
+# packages like app/src/main/kotlin/**/data/.
 # =============================================================
-data/
+/data/
 *.pdf
 dataset.json
 raw_urls.json
