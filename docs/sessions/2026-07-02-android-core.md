@@ -64,6 +64,18 @@ Implementierungen bleiben im Gleichschritt. Lokal ausgeführt: **18/18 grün.**
 installieren (Installation aus unbekannten Quellen einmalig erlauben).
 Debug-signiert — für den Eigengebrauch genau richtig.
 
+**Status: CI ist grün ✅** —
+[Run #3](https://github.com/krausstt/openbrowsertabs/actions/runs/28577264354)
+baut Core-Tests (18/18) + Debug-APK (`openbrowsertabs-debug-apk`, ~10,6 MB,
+Artefakt 90 Tage gültig). Zwei Fehlversuche vorher, beide lehrreich:
+
+1. **Run #1/#2:** `material3` ≥ 1.4 liefert `material-icons-core` nicht mehr
+   transitiv → explizite Dependency ergänzt.
+2. **Run #2:** Die Datenschutz-Regel `data/` in der `.gitignore` (unverankert)
+   hat auch das Kotlin-Package `app/**/data/` ignoriert — `LinkStore.kt` war
+   nie im Repo. Jetzt als `/data/` auf Root verankert und per
+   `git check-ignore` verifiziert.
+
 ## Wie du es ausprobierst
 
 1. APK installieren (s. o.)
