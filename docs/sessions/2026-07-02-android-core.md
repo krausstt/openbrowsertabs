@@ -78,10 +78,23 @@ Artefakt 90 Tage gültig). Zwei Fehlversuche vorher, beide lehrreich:
 
 ## Wie du es ausprobierst
 
-1. APK installieren (s. o.)
+1. APK installieren (s. o.) — **das Artefakt wird bei jedem grünen CI-Lauf
+   neu erzeugt**; falls eins gelöscht wurde, einfach das vom neuesten Lauf
+   nehmen (oder den Workflow über „Run workflow" manuell anstoßen)
 2. In Chrome/beliebiger App: Teilen → „Tab speichern"
 3. App öffnen: Link ist da, kategorisiert und getaggt
-4. Optional: Import-Button (＋) → URLs aus einem alten PDF-Export einfügen
+4. Bulk-Import, zwei Wege:
+   - **.txt-Datei mit URL-Liste direkt an die App teilen** (Dateimanager →
+     Teilen → „Tab speichern") — Nummerierungen („1. ", „2. ") werden
+     ignoriert, Duplikate innerhalb der Datei dedupliziert, bereits bekannte
+     URLs als Sichtung gezählt statt doppelt angelegt
+   - oder Import-Button (＋) in der App → Text mit URLs einfügen
+
+**Grenze des Text-Imports:** URLs müssen im Text *vollständig auf einer
+logischen Zeile* stehen. Text, der direkt aus einem PDF kopiert wurde, hat
+oft harte Zeilenumbrüche *mitten in* langen URLs — die zerreißt der
+Import. Für PDF-Exporte bleibt `pipeline/tabs_pipeline.py` der richtige
+Weg (repariert umbrochene URLs anhand der Listennummerierung).
 
 ## Offene Punkte (nächste Sessions)
 
