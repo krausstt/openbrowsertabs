@@ -6,11 +6,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # needed to publish dev releases with the APK attached
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # step-level `if:` cannot read secrets directly; surface presence here
+      HAVE_KEYSTORE: ${{ secrets.CI_KEYSTORE_B64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -22,9 +25,33 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Core unit tests + debug APK
-        run: ./gradlew --no-daemon :core:test :app:assembleDebug
+        run: ./gradlew --no-daemon :core:test :app:assembleDebug -PbuildNumber=${{ github.run_number }}
 
-      - name: Upload debug APK
+      - name: Decode signing keystore
+        if: env.HAVE_KEYSTORE == 'true'
+        run: |
+          echo "${{ secrets.CI_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/ci-keystore.jks"
+          echo "CI_KEYSTORE_PATH=$RUNNER_TEMP/ci-keystore.jks" >> "$GITHUB_ENV"
+
+      - name: Signed release APK
+        if: env.HAVE_KEYSTORE == 'true'
+        env:
+          CI_KEYSTORE_PASSWORD: ${{ secrets.CI_KEYSTORE_PASSWORD }}
+        run: ./gradlew --no-daemon :app:assembleRelease -PbuildNumber=${{ github.run_number }}
+
+      - name: Publish dev release (for Obtainium / direct install)
+        if: env.HAVE_KEYSTORE == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-${{ github.run_number }}
+          name: Dev build ${{ github.run_number }}
+          prerelease: true
+          body: >
+            Automatischer Test-Build von Commit ${{ github.sha }}.
+            Installierbar als Update über vorherige dev-Builds (gleiche Signatur).
+          files: app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: openbrowsertabs-debug-apk

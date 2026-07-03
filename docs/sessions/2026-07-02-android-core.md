@@ -120,6 +120,37 @@ Gratis dazu: `google.com/url?q=…`-Klick-Tracking-Wrapper werden jetzt
 und Kotlin-Core synchron, mit Cross-Validation-Tests. Die App hat dafür
 neu die INTERNET-Permission (einzige Permission der App).
 
+## Nachtrag 2: Schneller Update-Loop (statt Artifact-Download)
+
+Entscheidung: **GitHub Releases + Obtainium** statt Firebase App
+Distribution — gleicher Komfort (Update-Benachrichtigung, 1-Tap-Install),
+aber ohne Firebase-Projekt, Service-Account und Tester-App.
+
+Was die CI jetzt zusätzlich kann (sobald die zwei Secrets gesetzt sind):
+
+- Release-APK **konsistent signiert** mit einem festen CI-Keystore
+  (vorher: jeder Runner ein eigener Debug-Key → jedes Update hätte
+  Deinstallation + Datenverlust bedeutet)
+- `versionCode` = CI-Run-Nummer → jeder Build ist ein gültiges Update
+- Pro Push ein **Pre-Release `dev-<n>`** mit direkt installierbarer APK
+
+### Einmalige Einrichtung (2 Repo-Secrets + Obtainium)
+
+1. GitHub → Repo → Settings → Secrets and variables → Actions →
+   „New repository secret":
+   - `CI_KEYSTORE_B64` — Base64 des Keystores (kommt per Chat, NICHT ins Repo)
+   - `CI_KEYSTORE_PASSWORD` — das zugehörige Passwort (kommt per Chat)
+2. [Obtainium](https://github.com/ImranR98/Obtainium) installieren →
+   „App hinzufügen" → Repo-URL `https://github.com/krausstt/openbrowsertabs`
+   eintragen → „Pre-Releases einbeziehen" aktivieren
+3. Einmalig die alte debug-signierte App **deinstallieren** (Signaturwechsel;
+   ab dann laufen alle Updates nahtlos drüber)
+
+Ohne Secrets läuft die CI unverändert weiter (Debug-APK als Artifact);
+der Release-Teil schaltet sich automatisch dazu, sobald die Secrets da sind.
+Hinweis: Der Keystore signiert nur diese Test-Builds — er liegt bewusst
+nicht im (öffentlichen) Repo, sondern nur in den Secrets.
+
 ## Offene Punkte (nächste Sessions)
 
 - [ ] **Phase 2 Enrichment** (wartet auf dein Home-Lab): FastAPI-Service,
