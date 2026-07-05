@@ -1,10 +1,15 @@
 package io.github.krausstt.openbrowsertabs
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,6 +56,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
+import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 
 val CATEGORY_NAMES = mapOf(
     "article" to "Artikel/News", "blog" to "Blog", "repo" to "Repo",
@@ -63,6 +69,7 @@ val CATEGORY_NAMES = mapOf(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        EnrichmentWorker.ensureChannel(this)
         setContent {
             MaterialTheme {
                 LinksScreen()
@@ -78,6 +85,20 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     var showImport by remember { mutableStateOf(false) }
+    var selectedLink by remember { mutableStateOf<LinkEntity?>(null) }
+
+    // enrichment results arrive as notifications — ask once on Android 13+
+    val notifPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     // pick up links saved via the share sheet while the app was backgrounded
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -159,11 +180,7 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
                 items(state.links, key = { it.id }) { link ->
                     LinkRow(
                         link = link,
-                        onOpen = {
-                            runCatching {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link.canonicalUrl)))
-                            }
-                        },
+                        onOpen = { selectedLink = link },
                         onArchive = { vm.archive(link.id) },
                         onRestore = { vm.restore(link.id) },
                         onDelete = { vm.delete(link.id) },
@@ -182,6 +199,65 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
             },
         )
     }
+
+    selectedLink?.let { link ->
+        LinkDetailDialog(
+            link = link,
+            onDismiss = { selectedLink = null },
+            onOpen = {
+                runCatching {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link.canonicalUrl)))
+                }
+                selectedLink = null
+            },
+        )
+    }
+}
+
+@Composable
+private fun LinkDetailDialog(link: LinkEntity, onDismiss: () -> Unit, onOpen: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(link.label?.let { "🔍 $it" } ?: link.title ?: link.host)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                link.description?.let {
+                    Text(it, style = MaterialTheme.typography.bodyMedium)
+                }
+                val meta = buildList {
+                    add(CATEGORY_NAMES[link.category] ?: link.category)
+                    link.siteName?.let { add(it) } ?: add(link.host)
+                    link.publishedAt?.take(10)?.let { add(it) }
+                    if (link.nSightings > 1) add("${link.nSightings}× gesehen")
+                    add(enrichmentLabel(link.enrichmentState))
+                }
+                Text(
+                    meta.joinToString(" · "),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    link.canonicalUrl,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onOpen) { Text("Öffnen") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Schließen") }
+        },
+    )
+}
+
+private fun enrichmentLabel(state: String): String = when (state) {
+    "done" -> "angereichert ✓"
+    "unfetchable" -> "Seite nicht abrufbar"
+    else -> "Anreicherung ausstehend"
 }
 
 @Composable
@@ -213,6 +289,9 @@ private fun LinkRow(
                 add(CATEGORY_NAMES[link.category] ?: link.category)
                 add(link.host)
                 if (link.nSightings > 1) add("${link.nSightings}× gesehen")
+                // quiet by default: only surface non-final enrichment states
+                if (link.enrichmentState == "pending") add("⏳")
+                if (link.enrichmentState == "unfetchable") add("⚠ nicht abrufbar")
             }
             Text(
                 text = meta.joinToString(" · "),

@@ -7,6 +7,7 @@ import io.github.krausstt.openbrowsertabs.core.LinkParser
 import io.github.krausstt.openbrowsertabs.core.LinkResolution
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.data.LinkStore
+import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -69,10 +70,11 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
                 links.forEach { if (store.upsertSighting(it, title = null)) a++ else u++ }
                 a to u
             }
+            if (added > 0) EnrichmentWorker.enqueueDrain(getApplication())
             _state.value = _state.value.copy(
                 message = when {
                     added + seenAgain == 0 -> "Keine Links im Text gefunden"
-                    seenAgain == 0 -> "$added neu gespeichert"
+                    seenAgain == 0 -> "$added neu gespeichert — Anreicherung läuft im Hintergrund"
                     else -> "$added neu, $seenAgain bereits bekannt (Sichtung gezählt)"
                 },
             )

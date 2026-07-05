@@ -14,6 +14,7 @@ kotlin {
 }
 
 dependencies {
+    api(libs.jsoup)
     testImplementation(libs.kotlin.test)
 }
 

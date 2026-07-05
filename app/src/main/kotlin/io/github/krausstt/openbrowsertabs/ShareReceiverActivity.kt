@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import io.github.krausstt.openbrowsertabs.core.LinkParser
 import io.github.krausstt.openbrowsertabs.core.LinkResolution
 import io.github.krausstt.openbrowsertabs.data.LinkStore
+import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,6 +54,16 @@ class ShareReceiverActivity : ComponentActivity() {
             val title = if (links.size == 1) subject?.takeIf { it.isNotBlank() } else null
             var added = 0
             links.forEach { if (store.upsertSighting(it, title)) added++ }
+
+            // context-on-sight: enrich a single share right away (with result
+            // notification); bulk shares drain in the background queue
+            if (links.size == 1) {
+                store.byCanonicalUrl(links[0].canonicalUrl)?.let {
+                    EnrichmentWorker.enqueueForLink(this@ShareReceiverActivity, it.id)
+                }
+            } else {
+                EnrichmentWorker.enqueueDrain(this@ShareReceiverActivity)
+            }
 
             withContext(Dispatchers.Main) {
                 val msg = when {

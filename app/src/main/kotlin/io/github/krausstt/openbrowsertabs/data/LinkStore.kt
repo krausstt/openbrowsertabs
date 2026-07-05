@@ -20,7 +20,11 @@ data class LinkEntity(
     val nSightings: Int,
     val firstSeenAt: Long,
     val lastSeenAt: Long,
-    val pendingEnrichment: Boolean,
+    val description: String?,
+    val siteName: String?,
+    val publishedAt: String?,
+    val enrichmentState: String, // pending | done | unfetchable
+    val enrichedAt: Long?,
 )
 
 /**
@@ -29,7 +33,7 @@ data class LinkEntity(
  * implementation later (Room KMP or SQLDelight for the iPad port).
  */
 class LinkStore(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "links.db", null, 1) {
+    SQLiteOpenHelper(context.applicationContext, "links.db", null, 2) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -53,11 +57,29 @@ class LinkStore(context: Context) :
         )
         db.execSQL("CREATE INDEX idx_links_status ON links(status)")
         db.execSQL("CREATE INDEX idx_links_category ON links(category)")
+        migrateToV2(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // v1 — nothing to migrate yet
+        if (oldVersion < 2) migrateToV2(db)
     }
+
+    private fun migrateToV2(db: SQLiteDatabase) {
+        db.execSQL("ALTER TABLE links ADD COLUMN description TEXT")
+        db.execSQL("ALTER TABLE links ADD COLUMN content TEXT")
+        db.execSQL("ALTER TABLE links ADD COLUMN site_name TEXT")
+        db.execSQL("ALTER TABLE links ADD COLUMN published_at TEXT")
+        db.execSQL("ALTER TABLE links ADD COLUMN enrichment_state TEXT NOT NULL DEFAULT 'pending'")
+        db.execSQL("ALTER TABLE links ADD COLUMN enriched_at INTEGER")
+        db.execSQL("CREATE INDEX idx_links_enrichment ON links(enrichment_state)")
+    }
+
+    // all columns except `content` — it can be 100KB per row and is only
+    // needed for embeddings/digest jobs, never for list UI
+    private val entityColumns =
+        "id, canonical_url, original_url, host, title, label, category, topics, " +
+            "status, n_sightings, first_seen_at, last_seen_at, description, " +
+            "site_name, published_at, enrichment_state, enriched_at"
 
     /**
      * Insert the link or, if the canonical URL is already known, record a new
@@ -115,9 +137,55 @@ class LinkStore(context: Context) :
             args.add(like); args.add(like); args.add(like)
         }
         return readableDatabase.rawQuery(
-            "SELECT * FROM links WHERE $where ORDER BY last_seen_at DESC",
+            "SELECT $entityColumns FROM links WHERE $where ORDER BY last_seen_at DESC",
             args.toTypedArray(),
         ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+    }
+
+    fun byCanonicalUrl(url: String): LinkEntity? =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE canonical_url = ?",
+            arrayOf(url),
+        ).use { c -> if (c.moveToFirst()) c.toEntity() else null }
+
+    fun byId(id: Long): LinkEntity? =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE id = ?",
+            arrayOf(id.toString()),
+        ).use { c -> if (c.moveToFirst()) c.toEntity() else null }
+
+    fun pendingEnrichment(limit: Int): List<LinkEntity> =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE enrichment_state = 'pending' " +
+                "ORDER BY last_seen_at DESC LIMIT ?",
+            arrayOf(limit.toString()),
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+
+    fun pendingEnrichmentCount(): Int =
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE enrichment_state = 'pending'", null,
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+
+    fun applyEnrichment(
+        id: Long,
+        state: String,
+        title: String? = null,
+        description: String? = null,
+        content: String? = null,
+        siteName: String? = null,
+        publishedAt: String? = null,
+        now: Long = System.currentTimeMillis(),
+    ) {
+        val values = ContentValues().apply {
+            put("enrichment_state", state)
+            put("enriched_at", now)
+            if (title != null) put("title", title)
+            if (description != null) put("description", description)
+            if (content != null) put("content", content)
+            if (siteName != null) put("site_name", siteName)
+            if (publishedAt != null) put("published_at", publishedAt)
+        }
+        writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
     }
 
     fun categoryCounts(status: String?): Map<String, Int> {
@@ -153,7 +221,12 @@ class LinkStore(context: Context) :
         nSightings = getInt(getColumnIndexOrThrow("n_sightings")),
         firstSeenAt = getLong(getColumnIndexOrThrow("first_seen_at")),
         lastSeenAt = getLong(getColumnIndexOrThrow("last_seen_at")),
-        pendingEnrichment = getInt(getColumnIndexOrThrow("pending_enrichment")) == 1,
+        description = getStringOrNullAt("description"),
+        siteName = getStringOrNullAt("site_name"),
+        publishedAt = getStringOrNullAt("published_at"),
+        enrichmentState = getString(getColumnIndexOrThrow("enrichment_state")),
+        enrichedAt = if (isNull(getColumnIndexOrThrow("enriched_at"))) null
+        else getLong(getColumnIndexOrThrow("enriched_at")),
     )
 
     private fun Cursor.getStringOrNullAt(column: String): String? {
