@@ -235,13 +235,103 @@ Share-Sheet / Datei    ──►    Fetch + Readability-Extrakt  ──►  Kont
                               Relevanz-Decay-Scoring            Expiry-Inbox
 ```
 
-## 5. Entscheidungslog
+## 6. Nutzer-Antworten (Empathize abgeschlossen, 2026-07-05)
+
+1. **MVP-Fokus = Context-on-Sight**, als minimalistische Android-native
+   Interaktion: Teilen → sofortige Bestätigung (existiert) → danach als
+   **Benachrichtigung** Status + Ergebnis der Anreicherung (Assoziationen,
+   Scrape, LLM-Einordnung). **Klare Nr. 2: Wochen-Digest**, mindestens
+   rudimentär in der nächsten Preview. Alles andere danach, mit Blick auf
+   Synergien.
+2. **Konsum:** ① Audio unterwegs als „Nischenreport", ② kurze
+   Mobile-Momente auf Abruf.
+3. **Compute: On-device + Cloud als Produkt-Architektur** („niemand hat
+   mein Homesetup") — Home-Lab nur als persönliches Experimentier-Backend.
+   Cloud für Top-Notch-Weekly-Reports, Deep Dives, Nischen-Präsentationen.
+4. **Goal-Profil (Digest-Gewichtung):** AI/Agents ·
+   Homelab/Maker/Embedded/SmartHome/Tinkering · **Sidehustle** ·
+   Audio/Music/Video/AI-Art.
+5. **Wunde Punkte:** (a) Offene Tabs fressen RAM und sind nicht navigierbar
+   → die App muss das „Tab schließen ohne Verlustangst"-Ritual explizit
+   unterstützen. (b) **Feature-Wunsch „Modell-Radar":** Zeitgestempelte
+   SotA-Snapshots pro Modellkategorie (z. B. ASR: Parakeet → Canary → …)
+   aus den eigenen HuggingFace-Tabs — und von dort ausgehend **Nachfolger
+   finden**. Gibt es am Markt nicht.
+
+### Define — Problem-Statement (final)
+
+> Ein technikbegeisterter ADHS-Nutzer sammelt täglich interessante Inhalte
+> aus Feeds, kann sie aber weder zeitnah konsumieren noch beim Auftauchen
+> neuer Themen mit früheren Funden verbinden. Er braucht eine Capture-Schicht
+> ohne Folgekosten, die Assoziationen zur eigenen Sammlung automatisch
+> herstellt (Bringschuld der App), den Bestand in zielgewichtete, endliche
+> Berichte verwandelt (auch als Audio) und Sammlungen wie HF-Modellseiten in
+> lebendige, fortschreibbare Zeitleisten übersetzt — ohne von privater
+> Infrastruktur abzuhängen.
+
+## 7. Ziel-Architektur v1 (aus Antwort 3 abgeleitet)
+
+```
+Pflicht (shippable):   On-device: Fetch-Kaskade + Readability, EmbeddingGemma
+                       (Assoziationen), Gemma 4 E2B via LiteRT-LM (optionaler
+                       Modell-Download, inkrementelle Tags/Summaries),
+                       Template-Digest, System-TTS für Audio
+Optional (BYOK):       Cloud-LLM (API-Key des Nutzers) für narrative
+                       Wochen-Reports, Deep Dives, Brainstorming
+Optional (Self-Host):  Home-Lab-Backend mit identischer API wie der
+                       Cloud-Pfad (austauschbares Backend-Interface) —
+                       für Backfill-Experimente und Datensouveränität
+```
+
+Offene Produktentscheidung: BYOK (Nutzer bringt API-Key) vs. eigener
+Proxy-Dienst mit Abo — für die Preview-Phase BYOK.
+
+## 8. Scope „Preview 2" (nächste App-Version — Vorschlag)
+
+**A. Context-on-Sight (MVP-Kern):**
+1. `EnrichmentWorker` (WorkManager): arbeitet `pending_enrichment`-Queue ab —
+   OkHttp-Fetch → Readability-Extraktion → Titel/Beschreibung/Text in DB
+2. **EmbeddingGemma on-device:** Embedding pro Link, Kosinus-Assoziationen
+   gegen Bestand (Brute-Force reicht), Kanten in DB
+3. **Ergebnis-Benachrichtigung:** „Gespeichert: ⟨Titel⟩ — verwandt mit X, Y,
+   Z" → Tap öffnet Detailansicht mit Assoziationen + Kurzeinordnung
+4. Detail-Screen: extrahierter Inhalt, Tags, verwandte Links (klickbar)
+
+**B. Wochen-Digest (rudimentär):**
+5. Goal-Profile als editierbare Interessen (Antwort 4 als Default-Presets)
+6. Wöchentlicher Job: Neuzugänge clustern (Embeddings), pro Goal Top-Items +
+   Bezüge zu Altbestand, als Markdown-Report in der App + Benachrichtigung —
+   ohne LLM template-basiert, mit BYOK-Key narrativ
+7. **Audio:** System-TTS liest den Digest vor („Nischenreport to go") —
+   praktisch gratis, großer Effekt
+
+**Bewusst NICHT in Preview 2:** Gemma-4-LLM-Pflicht (Modell-Download ~GB →
+optional in Preview 3), Modell-Radar (Preview 3, s. u.), Frag-deine-Tabs
+(braucht RAG-Reife), Home-Lab-Sync.
+
+## 9. Feature-Konzept „Modell-Radar" (Preview 3, Design jetzt)
+
+Nutzt die **offizielle HuggingFace-API** (öffentlich, ToS-sauber):
+`/api/models/<id>` liefert `pipeline_tag` (z. B. automatic-speech-recognition),
+Datum, Downloads, Lizenz. Damit:
+1. Alle gespeicherten HF-Links (62 im Bestand) automatisch nach
+   Modellkategorie einsortieren → **Zeitleiste pro Kategorie** = die
+   gewünschten „SotA-Snapshots mit Zeitstempel"
+2. **Nachfolger-Suche:** API-Query pro Kategorie (sortiert nach
+   createdAt/Downloads/Trending) → „Neuer als dein letzter Stand: …" →
+   speist Context-on-Sight und den Wochen-Digest („in ASR ist seit deinem
+   letzten Fund X erschienen")
+3. Generalisierung später: gleiche Mechanik für GitHub-Repos (Releases-API)
+
+## 10. Entscheidungslog
 
 | Datum | Entscheidung | Status |
 |---|---|---|
 | 2026-07-05 | Erst Problemraum & Feasibility, dann Implementierung | beschlossen |
-| offen | MVP-Fokus (F1) | wartet auf Nutzer |
-| offen | Compute-Topologie (F3) | wartet auf Nutzer |
+| 2026-07-05 | MVP-Fokus: Context-on-Sight, Nr. 2 Wochen-Digest (rudimentär) | beschlossen (Nutzer) |
+| 2026-07-05 | Compute: on-device + Cloud (BYOK) als Produkt; Home-Lab nur optionales Backend | beschlossen (Nutzer) |
+| offen | Preview-2-Scope (Kapitel 8) | wartet auf Nutzer-Freigabe |
+| offen | BYOK-Anbieter für narrative Digests (Claude/Gemini/konfigurierbar) | Diskussion |
 | offen | YT-Transcript-Weg (ToS-Abwägung: offiziell unmöglich, inoffiziell Grauzone) | wartet auf Nutzer |
 | offen | Takeout-Test: enthält der Playlist-Export Watch Later? | Nutzer macht Test-Export |
 | 2026-07-05 | YT-Ingestion primär via Share-Intent (ToS-sauber, geht schon) | empfohlen |
