@@ -65,6 +65,45 @@ im Chat beantworten, Stichworte reichen.)*
   dem dich die Tab-Sammlung geärgert hat. Was hast du gesucht, was hast du
   stattdessen getan, wie viel Zeit hat es gekostet?
 
+## 2b. Research: ADHS-UX (Persona: UX-Researcherin) — ERGEBNIS
+
+*Evidenzlage: überwiegend Praktiker-/Community-Wissen, kognitionspsychologisch
+konsistent; keine kontrollierten Studien.*
+
+**Bestätigte Pain Points (Auswahl):**
+
+1. **Tabs sind externalisiertes Arbeitsgedächtnis** — Tab-Hoarding ist eine
+   rationale Kompensation für Arbeitsgedächtnis-Defizite; „einfach schließen"
+   verlangt genau die Exekutivfunktion, die fehlt.
+2. **Collector's Fallacy:** Speichern gibt das Produktivitätsgefühl, Lesen
+   nicht; >90 % gespeicherter Links sind laut einem Praxisbericht nach 6
+   Monaten tot oder paywalled → Dead-Link-Erkennung ist Pflicht.
+3. **Out of sight = out of mind** („Objektpermanenz"): Was im Archiv
+   verschwindet, existiert nicht mehr → Resurfacing muss aktiv sein.
+4. **Komplexe Taxonomien scheitern strukturell** (Energieschwankungen), nicht
+   an Disziplin → Now/Not-Now-Triage, AI übernimmt den Rest.
+5. **Markt-Lücke bestätigt:** Nach dem Pocket-Aus (Juli 2025, 20 Mio. Nutzer)
+   decken Readwise Reader / Karakeep / Wallabag jeweils Teile ab — **keines
+   adressiert die Speichern-ohne-Lesen-Schleife oder verbindet Neues aktiv
+   mit Altem.** Auto-Assoziation existiert nur in Nischen-Tools mit ~40 %
+   Rausch-Anteil.
+
+**Abgeleitete Design-Prinzipien:** Externalisieren statt disziplinieren ·
+Null-Entscheidungs-Erfassung · Now/Not-Now statt Taxonomie · Guilt-free by
+design (kein Ungelesen-Zähler!) · Resurfacing als Belohnung (Novelty aus dem
+eigenen Bestand) · Konsolidierung mit klarem Ende statt Endlos-Feed.
+
+**Anti-Patterns (nicht bauen):** Ungelesen-Badges, Inbox-Zero-Druck, Streaks
+mit Bestrafung, Pflicht-Ordner/Tagging, eigener Endlos-Feed mit
+Fremdempfehlungen, 700-Einträge-Listen ohne progressive Disclosure,
+Löschzwang-Timer.
+
+Quellen: techcrunch.com (Pocket-Shutdown), differentbrains.org, browser.horse,
+dev.to, taskade.medium.com, focuspage.app, simplifyspaceandsoul.com,
+psychcentral.com, welcomingweb.com, accessibilitychecker.org, readwise.io,
+github.com/karakeep-app, xda-developers.com, burn451.cloud, seroundtable.com,
+wikipedia.org/wiki/Doomscrolling, today.ucsd.edu, liminary.io
+
 ## 3. Technischer Feasibility-Stand (vorläufig)
 
 *Drei Research-Agenten (Personas: ADHS-UX, On-Device-AI, Ingestion) verifizieren
