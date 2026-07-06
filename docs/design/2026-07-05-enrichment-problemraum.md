@@ -323,6 +323,40 @@ Datum, Downloads, Lizenz. Damit:
    letzten Fund X erschienen")
 3. Generalisierung später: gleiche Mechanik für GitHub-Repos (Releases-API)
 
+## 11. Research: YouTube-Integration (private Watch-Later + Feed) — ERGEBNIS
+
+Frage des Nutzers: WL ist privat (Login nötig) — ginge Scraping, indem man
+WL im Browser eingeloggt öffnet und teilen/auslesen lässt?
+
+**Kernaussage: Es gibt keinen offiziellen automatisierten Weg an die private
+WL-Liste.** Data API v3 liefert WL seit 12.09.2016 leer (verifiziert). Bewertung
+der Wege:
+
+| Ansatz | Urteil | Begründung |
+|---|---|---|
+| **Share-Intent** (Video aus YT-App teilen) | ✅ **Primärweg** | ToS-konform, stabil, kein Konto-Risiko. `ACTION_SEND text/plain`, URL in `EXTRA_TEXT` (mit `?si=`-Suffix). `EXTRA_SUBJECT`/Titel **nicht** verlässlich → Video-ID aus URL parsen. |
+| **oEmbed / Data API `videos.list`** (Metadaten) | ✅ | oEmbed keyless: Titel/Kanal/Thumbnail. Data API mit eigenem Key: Dauer/Beschreibung (10k Units/Tag). Beides ToS-konform. |
+| **Google Takeout für WL-Bestand** | ⚠️ **unsicher** | Legitim, aber Community-Threads (2024–2026) berichten, dass **WL oft fehlt/unvollständig** ist. **Nutzer: bitte Testexport prüfen.** CSV hat nur Video-IDs → Metadaten via oEmbed nachladen. |
+| **WebView eingeloggt + DOM-Scrape** | ❌ **nicht empfohlen** | Wichtig: Googles WebView-Block betrifft nur den **OAuth-Endpunkt**, nicht das Anzeigen — **aber der Erst-Login (accounts.google.com) wird im App-WebView trotzdem abgewiesen** (`disallowed_useragent`), Session müsste fragil injiziert werden. Zudem: YT-ToS verbietet Scraping auch eigener Daten, DOM bricht bei Layout-Updates, **reales Ban-Risiko fürs Hauptkonto.** |
+| **Accessibility-Service** | ❌ | Play-Policy verbietet Zweckentfremdung → Store-Rauswurf-Risiko; fragil. |
+| **Transcripts** | ⚠️ Grauzone | Offiziell nur manuelle Captions; inoffizielle Libs undokumentiert, nur öffentliche Videos. |
+
+**Empfohlene Strategie:** ① Feed-Neues → Share-Intent (bauen wir wie den
+bestehenden Link-Share-Receiver). ② Metadaten → oEmbed (+ optional Data-API-Key).
+③ WL-Bestand → Takeout *falls* WL enthalten (sonst manuell im Browser öffnen und
+Videos selbst teilen — **kein automatisiertes Scraping**). ④ WebView-Scrape &
+Accessibility meiden.
+
+**Entscheidungslog-relevant:** WebView-Scrape der privaten WL wird **verworfen**
+(Konto-Risiko > Nutzen). YouTube kommt als eigener Content-Typ ins Datenmodell,
+Ingestion via Share-Intent + oEmbed.
+
+Quellen: developers.google.com/youtube (Revision History, videos.list,
+developer-policies), developers.googleblog.com (OAuth-WebView-Block), auth0.com,
+developer.android.com (Share-Intent, CookieManager), youtube.com/static?template=terms,
+support.google.com/youtube (Takeout-Threads 362481678, 421638858),
+queen.raae.codes (oEmbed), noembed.com, pypi.org/project/youtube-transcript-api
+
 ## 10. Entscheidungslog
 
 | Datum | Entscheidung | Status |
@@ -332,6 +366,9 @@ Datum, Downloads, Lizenz. Damit:
 | 2026-07-05 | Compute: on-device + Cloud (BYOK) als Produkt; Home-Lab nur optionales Backend | beschlossen (Nutzer) |
 | offen | Preview-2-Scope (Kapitel 8) | wartet auf Nutzer-Freigabe |
 | offen | BYOK-Anbieter für narrative Digests (Claude/Gemini/konfigurierbar) | Diskussion |
+| 2026-07-05 | YouTube: Share-Intent + oEmbed als Weg; WebView-Scrape der WL verworfen (Konto-Risiko) | beschlossen |
+| offen | Takeout-Test: enthält der Export „Später ansehen"? | Nutzer prüft |
+| offen | Embedding-Modell (EmbeddingGemma vs. Alternativen) | Research läuft |
 | offen | YT-Transcript-Weg (ToS-Abwägung: offiziell unmöglich, inoffiziell Grauzone) | wartet auf Nutzer |
 | offen | Takeout-Test: enthält der Playlist-Export Watch Later? | Nutzer macht Test-Export |
 | 2026-07-05 | YT-Ingestion primär via Share-Intent (ToS-sauber, geht schon) | empfohlen |
