@@ -357,6 +357,54 @@ developer.android.com (Share-Intent, CookieManager), youtube.com/static?template
 support.google.com/youtube (Takeout-Threads 362481678, 421638858),
 queen.raae.codes (oEmbed), noembed.com, pypi.org/project/youtube-transcript-api
 
+## 12. Research: On-Device-Embedding-Modell — ERGEBNIS
+
+Frage: Wie ressourcenhungrig ist EmbeddingGemma, gibt es bessere Alternativen?
+*(HF/Reddit waren für den Crawler teils 403 → einzelne Zahlen aus
+Sekundärquellen, unten markiert.)*
+
+**EmbeddingGemma-300m Faktenblatt:** 308M Params, **<200 MB RAM** quantisiert
+(QAT, int8/int4 nahezu verlustfrei), **2.048 Token** Kontext, **768 Dim**
+(Matryoshka kürzbar auf 512/256/128 **ohne Re-Inferenz**), **100+ Sprachen**
+(DE+EN), Top-Modell <500M auf MTEB-Multilingual. Latenz offiziell nur für
+EdgeTPU belegt (~15 ms/256 Tok) — **belastbare Phone-CPU-Werte fehlen, vor
+Festlegung selbst messen.** Lizenz: Gemma Terms (für private App unkritisch).
+Android: ONNX Runtime Mobile (LiteRT-Paket nicht eindeutig bestätigt).
+
+**Alternativen (<600M):**
+
+| Modell | Größe | Dim | mehrspr. | Lizenz | Hinweis |
+|---|---|---|---|---|---|
+| **EmbeddingGemma-300m** | 308M | 768→128 MRL | 100+ | Gemma | Primärempfehlung |
+| Qwen3-Embedding-0.6B | 600M | 32–1024 MRL | 100+ | Apache-2.0 | höchste Qualität, ~1 GB RAM |
+| snowflake-arctic-embed-m-v2.0 | 305M | 768 MRL | 74 Spr. | Apache-2.0 | permissive Alt. |
+| granite-embedding-278m | 278M | 768 | 12 (inkl. DE) | Apache-2.0 | permissive Alt. |
+| multilingual-e5-small | 118M | 384 | ~100 | MIT | Leichtgewicht-Baseline |
+| potion-multilingual-128M (Model2Vec, **static**) | ~128M | 256 | 101 | MIT | ~100–500× schneller, ~91 % LaBSE-Qualität |
+
+**r/LocalLLaMA-Stimmung (Sekundärquellen):** Qualitäts-Favoriten
+Qwen3-Embedding-0.6B & BGE-M3; nomic-embed am verbreitetsten („gut genug");
+EmbeddingGemma gilt als beste On-Device-Option für kleines RAM-Budget;
+Model2Vec/potion beliebt für Speed-/CPU-only-Fälle.
+
+**Model2Vec-Trade-off:** bis ~50× kleiner (8–30 MB), ~100–500× schneller,
+aber Qualität englisch ~8 % unter MiniLM. **Für 700 Docs ist Embedding-Zeit
+bei jedem Modell trivial (Sekunden–Minuten einmalig)** → der Speed-Vorteil
+zahlt sich nicht aus, Qualität gewinnt.
+
+**Empfehlung:** **EmbeddingGemma-300m (ONNX int8, Dim 256 via Matryoshka)** —
+bestes Qualität/RAM-Verhältnis, echtes DE+EN, Vektorspeicher für 700 Docs nur
+~0,7 MB, Brute-Force-Kosinus reicht (keine Vektor-DB). Falls strikt
+permissive Lizenz gewünscht: granite-278m oder arctic-embed-m-v2.0 als
+gleichgroße Apache-Alternative. Reihenfolge fürs Bauen: erst mit einer der
+Apache-Alternativen als Fallback-Plan absichern, real auf eigenen Artikeln
+messen (Phone-CPU-Latenz!), dann festlegen.
+
+Quellen: ai.google.dev/gemma/docs/embeddinggemma, developers.googleblog.com,
+huggingface.co/google/embeddinggemma-300m, arxiv.org/pdf/2509.20354,
+huggingface.co/Qwen/Qwen3-Embedding-0.6B, huggingface.co/Snowflake/…-m-v2.0,
+ibm.com (granite), github.com/MinishLab/model2vec, milvus.io, bentoml.com
+
 ## 10. Entscheidungslog
 
 | Datum | Entscheidung | Status |
@@ -368,7 +416,7 @@ queen.raae.codes (oEmbed), noembed.com, pypi.org/project/youtube-transcript-api
 | offen | BYOK-Anbieter für narrative Digests (Claude/Gemini/konfigurierbar) | Diskussion |
 | 2026-07-05 | YouTube: Share-Intent + oEmbed als Weg; WebView-Scrape der WL verworfen (Konto-Risiko) | beschlossen |
 | offen | Takeout-Test: enthält der Export „Später ansehen"? | Nutzer prüft |
-| offen | Embedding-Modell (EmbeddingGemma vs. Alternativen) | Research läuft |
+| 2026-07-05 | Embedding-Modell: EmbeddingGemma-300m (ONNX int8, Dim 256); granite-278m/arctic-m-v2 als Apache-Fallback; auf eigenen Artikeln messen vor Festlegung | empfohlen |
 | offen | YT-Transcript-Weg (ToS-Abwägung: offiziell unmöglich, inoffiziell Grauzone) | wartet auf Nutzer |
 | offen | Takeout-Test: enthält der Playlist-Export Watch Later? | Nutzer macht Test-Export |
 | 2026-07-05 | YT-Ingestion primär via Share-Intent (ToS-sauber, geht schon) | empfohlen |
