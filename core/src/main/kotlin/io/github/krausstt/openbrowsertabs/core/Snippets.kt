@@ -27,4 +27,19 @@ object Snippets {
         val lastSpace = cut.lastIndexOf(' ')
         return (if (lastSpace > maxChars / 2) cut.take(lastSpace) else cut).trimEnd() + " …"
     }
+
+    private val PROMO_HINTS = Regex(
+        "affiliate|sponsor(ed)?|commission|discount code|promo code|use code|coupon|" +
+            "paid partnership|partnered with",
+        RegexOption.IGNORE_CASE,
+    )
+    private val URL_PATTERN = Regex("https?://")
+
+    /**
+     * Heuristic for sponsor/affiliate-heavy text (common in YouTube video
+     * descriptions) that makes a poor "catchy one-liner" even though it is
+     * real, non-boilerplate content.
+     */
+    fun isPromotional(text: String): Boolean =
+        PROMO_HINTS.containsMatchIn(text) || URL_PATTERN.findAll(text).count() >= 2
 }

@@ -55,6 +55,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.krausstt.openbrowsertabs.core.Headline
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 
@@ -295,7 +296,7 @@ private fun LinkRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             val headline = link.label?.let { "🔍 $it" }
-                ?: link.title
+                ?: link.title?.let { Headline.shortHeadline(it, link.canonicalUrl) }
                 ?: (link.host + shortPath(link.canonicalUrl))
             Text(
                 text = headline,

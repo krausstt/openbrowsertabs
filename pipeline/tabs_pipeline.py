@@ -198,7 +198,9 @@ TOPIC_RULES = [
     ("hardware",     r"cpu|gpu|nvidia|amd|intel|ssd|nas|mini-?pc|laptop|notebook|smartphone|galaxy|pixel|tablet|monitor|display|router|wifi"),
     ("data_science", r"data-?science|pandas|jupyter|notebook|dataset|analytics|visualization|statistics|knowledge-?graph|networkx|graph"),
     ("gaming",       r"pokemon|nintendo|playstation|xbox|steam|gaming|game"),
-    ("health",       r"fitness|sleep|health|garmin|watch|calisthenics"),
+    # NOT bare "watch": every YouTube URL contains /watch?v=, which made
+    # every video false-positive match "health" via this rule
+    ("health",       r"fitness|sleep|health|garmin|smartwatch|calisthenics"),
     ("travel",       r"airbnb|skyscanner|safari|booking|flight|hotel|reise|namibia|travel"),
 ]
 

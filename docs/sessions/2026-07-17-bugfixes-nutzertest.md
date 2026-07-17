@@ -1,0 +1,94 @@
+# Session-Notiz 2026-07-17 · Erster Nutzertest: 3 Bugs gefixt, Lizenz-Kurs geschärft, 2 neue Forks vorgemerkt
+
+Grundlage: drei Screenshots des ersten echten Tests von Dev Build 18.
+
+## Gefundene & behobene Bugs
+
+**1. „watch"-Regex-Bug (Kern-Ursache für kaputtes Video-Tagging)**
+Die Health-Themenregel enthielt das bloße Wort „watch". Jede YouTube-URL
+(`…/watch?v=…`) matchte das — jedes Video bekam „Fitness" angehängt, und
+darüber wurden sogar Fitness-Websites (menshealth.com, honehealth.com) als
+„verwandt" zu einem LEGO-Bastelvideo gelistet. Fix in **beiden**
+Implementierungen (Kotlin-Core + Python-Pipeline, Parität gewahrt):
+„watch" raus, `smartwatch` als spezifischerer Ersatz rein.
+
+**Strukturelle Ursache dahinter:** Tagging lief ausschließlich auf der URL.
+Bei opaken URLs (YouTube-Video-IDs tragen keine Themen-Information) kann das
+gar nicht gut funktionieren. Fix: `Categorizer.topics()` läuft jetzt bei der
+Anreicherung zusätzlich auf Titel + One-Liner + Artikeltext — der
+strukturelle Grund für „Tagging bei Videos schwach" ist damit behoben, nicht
+nur das Symptom.
+
+**2. Zu lange Notification-Titel**
+`nvidia/personaplex-7b-v1 · Hugging Face` war der rohe `<title>`-Tag. Neues
+`Headline`-Modul: für HuggingFace/GitHub wird der Name direkt aus dem
+URL-Pfad abgeleitet → „Personaplex 7b v1", „VibeVoice ASR" (Segmente mit
+Ziffern bleiben unverändert, bereits gemischt-großgeschriebene Akronyme wie
+„ASR" werden nicht kaputt-normalisiert). Für alles andere: Site-Suffix-
+Dublette entfernen, wortgrenzen-sauber auf ~8 Wörter/60 Zeichen kürzen.
+
+*Ehrlicher Rahmen:* Beliebige lange Artikeltitel („I Built a Working LEGO
+James Bond Gun Barrel Scene…") auf wirklich knackige 1–4 Wörter zu
+verdichten, ohne Bedeutung zu verlieren, braucht ein LLM
+(Zusammenfassungsstufe) — reine Heuristik schafft nur die mechanischen
+Fälle (Site-Suffix, Repo-Namen). Das ist ein Punkt für Fork A.
+
+**3. Falsche Assoziationen durch Werbe-/Boilerplate-Text**
+HuggingFace zeigt auf jeder Modellseite dieselbe Standard-Beschreibung
+(„We're on a journey to advance and democratize…"). Die floss unverändert
+in den TF-IDF-Ähnlichkeitskorpus ein und ließ beliebige HF-Seiten
+„verwandt" erscheinen, nur weil sie denselben Marketing-Satz teilen. Fix:
+- `description` fliegt komplett aus dem Ähnlichkeits-Text (Titel+Label+
+  Topics+Content reichen und sind aussagekräftiger)
+- **generischer** Boilerplate-Check: „taucht dieser exakte Text bei ≥2
+  anderen Einträgen auf?" (DB-Duplikat-Zählung) — erkennt jede seitenweite
+  Standardbeschreibung automatisch, ohne Host-Blockliste pflegen zu müssen
+- zusätzlich Promo-Text-Erkennung (Schlüsselwörter wie „commission",
+  „affiliate", „use code" + URL-Dichte) für den YouTube-Sponsor-Fall aus
+  Screenshot 3 — beide Fälle fallen jetzt auf die Lead-Sätze des echten
+  Artikeltexts zurück statt auf Werbetext
+
+## Lizenz-Kurs geschärft (Commercial-Strategie)
+
+Nutzer-Vorgabe: durchgehend Apache-2.0/MIT statt Gemma-Terms für eine
+mögliche kommerzielle Zukunft. Konsequenz fürs Design-Doc: Der
+Embedding-Primärkandidat wechselt von EmbeddingGemma zu
+**granite-embedding-278m-multilingual (Apache-2.0)**; Gemma 4 E2B (für
+Summaries/Multimodal) ist jetzt Teil der Lizenz-Prüfung in Fork A statt
+Direktentscheidung.
+
+## Neue Feature-Forks (Backlog, nicht gestartet)
+
+- **Fork A — Multimodales lokales Modell:** Screenshots + Seitenbilder +
+  Text gemeinsam strukturieren/suchbar machen (Gemma 4 E2B o. Ä.), inkl.
+  „wie viel Intelligenz brauchen wir wirklich" und Lizenzprüfung
+- **Fork B — AR-Netzwerk-Graph:** Die Tab-Sammlung als navigierbarer
+  Beziehungsgraph in Augmented Reality. Noch keine Recherche (ARCore/
+  Filament vs. Scene-Viewer/WebXR, Performance bei 700+ Knoten, Interaktion)
+
+Nutzer-Ansage: „Erst die Verbesserungen fertig machen" — beide Forks sind
+im Design-Doc vermerkt, aber bewusst nicht in dieser Session begonnen.
+
+## Takeout-Frage endgültig geklärt
+
+Screenshot des Nutzers zeigt den aktuellen Google-Datenexport-Dialog für
+„YouTube und YouTube Music": Die Inhaltsoptionen sind Abos, Verlauf,
+YouTube Kids, Creator-Demographics, Music (library/uploads), Shopping,
+Support Issues — **kein „Playlists"-Eintrag, keine Watch-Later-Option.**
+Damit ist die frühere Unsicherheit („Community-Berichte sagen WL fehlt oft")
+geklärt: Takeout ist für den WL-Bestand keine Option. Der WL-Import bleibt
+manuell (Browser öffnen, Videos einzeln teilen).
+
+## Test-Hinweis für die nächste Version
+
+- Denselben PrismML- und HF-Modell-Link nochmal teilen → Notification
+  sollte jetzt kurzen Headline + saubere Assoziationen zeigen
+- Ein YouTube-Video mit Sponsor-Beschreibung teilen → One-Liner sollte
+  jetzt aus dem Artikeltext/der Videobeschreibung ohne Werbeteil kommen
+  (bzw. bei stark affiliate-lastigem Text ganz umschalten)
+- Ein weiteres Video teilen → Tag sollte nicht mehr „Fitness" sein, sofern
+  der Inhalt nicht wirklich Fitness-bezogen ist
+
+---
+*Generated by AI (Claude Code Session). Quellen: Nutzer-Screenshots (Chat),
+Design-Doc Kapitel 13, Core-Tests lokal (46/46), CI-Build.*

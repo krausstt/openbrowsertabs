@@ -44,4 +44,28 @@ class CategorizerTest {
         assertEquals(listOf("llm_agents"), Categorizer.topics("https://huggingface.co/org/model-7b"))
         assertEquals(listOf("untagged"), Categorizer.topics("https://example.com/a/b"))
     }
+
+    @Test
+    fun `bare watch in youtube urls no longer false-positives as health`() {
+        // regression: every /watch?v= URL used to match the "health" rule
+        // via the bare keyword "watch", tagging all videos as fitness content
+        assertEquals(listOf("untagged"), Categorizer.topics("https://youtube.com/watch?v=abc123"))
+        // "garmin"/"smartwatch" still correctly signal health when the word
+        // is genuinely about a wearable, not YouTube's "watch" verb
+        assertEquals(
+            listOf("embedded_iot", "health"),
+            Categorizer.topics("Garmin smartwatch review with heart rate sensor"),
+        )
+    }
+
+    @Test
+    fun `topics works on real page text, not just url slugs`() {
+        // the actual generalization: video/opaque-URL hosts get meaningful
+        // tags once we feed extracted title+content instead of the bare URL
+        // "nvidia" also matches "hardware" — both tags are correct for this text
+        assertEquals(
+            listOf("llm_agents", "hardware"),
+            Categorizer.topics("NVIDIA Nemotron Voice: a new speech-to-speech agent model"),
+        )
+    }
 }

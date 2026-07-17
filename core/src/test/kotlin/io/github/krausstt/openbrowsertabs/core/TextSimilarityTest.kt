@@ -64,4 +64,17 @@ class SnippetsTest {
         assertEquals(null, Snippets.lead("   ", 100))
         assertEquals(null, Snippets.lead(null, 100))
     }
+
+    @Test
+    fun `sponsor-laden youtube description is flagged promotional`() {
+        val text = "Using some of the links below, I may receive a small commission " +
+            "at no extra cost to you. Set up the Mobbin MCP: https://mobbin.com/?via=x " +
+            "Launch your portfolio in days, not months."
+        assertTrue(Snippets.isPromotional(text))
+    }
+
+    @Test
+    fun `ordinary description is not flagged promotional`() {
+        assertTrue(!Snippets.isPromotional("Ein neues Modell für Spracherkennung wurde veröffentlicht."))
+    }
 }

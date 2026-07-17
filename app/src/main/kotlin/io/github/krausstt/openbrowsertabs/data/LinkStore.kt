@@ -162,16 +162,33 @@ class LinkStore(context: Context) :
         return ids.mapNotNull { byId[it] }
     }
 
-    /** id + text material for the similarity corpus (content capped in SQL). */
+    /**
+     * id + text material for the similarity corpus (content capped in SQL).
+     * Deliberately excludes `description`: site-wide boilerplate descriptions
+     * (e.g. HuggingFace's identical tagline on every model page) would
+     * otherwise make unrelated pages look "related" purely by sharing that
+     * fixed marketing text.
+     */
     fun similarityDocs(): List<Pair<Long, String>> =
         readableDatabase.rawQuery(
             "SELECT id, COALESCE(title,'') || ' ' || COALESCE(label,'') || ' ' || " +
-                "COALESCE(description,'') || ' ' || COALESCE(topics,'') || ' ' || " +
-                "COALESCE(substr(content,1,1500),'') FROM links",
+                "COALESCE(topics,'') || ' ' || COALESCE(substr(content,1,1500),'') FROM links",
             null,
         ).use { c ->
             generateSequence { if (c.moveToNext()) c.getLong(0) to c.getString(1) else null }.toList()
         }
+
+    /**
+     * How many OTHER rows share this exact description string. A count >= 2
+     * means the text is a fixed site-wide default (boilerplate), not a
+     * genuine per-page summary — used to keep such text out of notifications
+     * and the "one-liner" without needing a per-host blocklist.
+     */
+    fun countSharedDescription(description: String, excludingId: Long): Int =
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE description = ? AND id != ?",
+            arrayOf(description, excludingId.toString()),
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
     fun updateRelated(id: Long, relatedIds: List<Long>) {
         val values = ContentValues().apply {
@@ -212,6 +229,7 @@ class LinkStore(context: Context) :
         content: String? = null,
         siteName: String? = null,
         publishedAt: String? = null,
+        topics: List<String>? = null,
         now: Long = System.currentTimeMillis(),
     ) {
         val values = ContentValues().apply {
@@ -222,6 +240,7 @@ class LinkStore(context: Context) :
             if (content != null) put("content", content)
             if (siteName != null) put("site_name", siteName)
             if (publishedAt != null) put("published_at", publishedAt)
+            if (topics != null) put("topics", topics.joinToString(","))
         }
         writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
     }

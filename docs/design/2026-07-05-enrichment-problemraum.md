@@ -336,16 +336,17 @@ der Wege:
 |---|---|---|
 | **Share-Intent** (Video aus YT-App teilen) | ✅ **Primärweg** | ToS-konform, stabil, kein Konto-Risiko. `ACTION_SEND text/plain`, URL in `EXTRA_TEXT` (mit `?si=`-Suffix). `EXTRA_SUBJECT`/Titel **nicht** verlässlich → Video-ID aus URL parsen. |
 | **oEmbed / Data API `videos.list`** (Metadaten) | ✅ | oEmbed keyless: Titel/Kanal/Thumbnail. Data API mit eigenem Key: Dauer/Beschreibung (10k Units/Tag). Beides ToS-konform. |
-| **Google Takeout für WL-Bestand** | ⚠️ **unsicher** | Legitim, aber Community-Threads (2024–2026) berichten, dass **WL oft fehlt/unvollständig** ist. **Nutzer: bitte Testexport prüfen.** CSV hat nur Video-IDs → Metadaten via oEmbed nachladen. |
+| **Google Takeout für WL-Bestand** | ❌ **bestätigt nicht möglich** | **Update 2026-07-17:** Nutzer-Test zeigt: Der Takeout-Dialog für „YouTube und YouTube Music" bietet aktuell nur noch Abos, Verlauf, YouTube Kids, Creator-Demographics, Music (library/uploads), Shopping, Support Issues — **kein „Playlists"-Eintrag mehr, gar keine Option für Watch Later.** Frühere Unsicherheit ist damit geklärt: Takeout scheidet für den WL-Bestand komplett aus. |
 | **WebView eingeloggt + DOM-Scrape** | ❌ **nicht empfohlen** | Wichtig: Googles WebView-Block betrifft nur den **OAuth-Endpunkt**, nicht das Anzeigen — **aber der Erst-Login (accounts.google.com) wird im App-WebView trotzdem abgewiesen** (`disallowed_useragent`), Session müsste fragil injiziert werden. Zudem: YT-ToS verbietet Scraping auch eigener Daten, DOM bricht bei Layout-Updates, **reales Ban-Risiko fürs Hauptkonto.** |
 | **Accessibility-Service** | ❌ | Play-Policy verbietet Zweckentfremdung → Store-Rauswurf-Risiko; fragil. |
 | **Transcripts** | ⚠️ Grauzone | Offiziell nur manuelle Captions; inoffizielle Libs undokumentiert, nur öffentliche Videos. |
 
-**Empfohlene Strategie:** ① Feed-Neues → Share-Intent (bauen wir wie den
-bestehenden Link-Share-Receiver). ② Metadaten → oEmbed (+ optional Data-API-Key).
-③ WL-Bestand → Takeout *falls* WL enthalten (sonst manuell im Browser öffnen und
-Videos selbst teilen — **kein automatisiertes Scraping**). ④ WebView-Scrape &
-Accessibility meiden.
+**Empfohlene Strategie (aktualisiert 2026-07-17):** ① Feed-Neues → Share-Intent
+(bauen wir wie den bestehenden Link-Share-Receiver). ② Metadaten → oEmbed
+(+ optional Data-API-Key). ③ **WL-Bestand → nur noch manuell**: Browser
+öffnen, `youtube.com/playlist?list=WL`, Videos einzeln teilen — Takeout ist
+raus, WebView-Scrape bleibt verworfen. ④ WebView-Scrape & Accessibility
+meiden.
 
 **Entscheidungslog-relevant:** WebView-Scrape der privaten WL wird **verworfen**
 (Konto-Risiko > Nutzen). YouTube kommt als eigener Content-Typ ins Datenmodell,
@@ -392,18 +393,80 @@ aber Qualität englisch ~8 % unter MiniLM. **Für 700 Docs ist Embedding-Zeit
 bei jedem Modell trivial (Sekunden–Minuten einmalig)** → der Speed-Vorteil
 zahlt sich nicht aus, Qualität gewinnt.
 
-**Empfehlung:** **EmbeddingGemma-300m (ONNX int8, Dim 256 via Matryoshka)** —
-bestes Qualität/RAM-Verhältnis, echtes DE+EN, Vektorspeicher für 700 Docs nur
-~0,7 MB, Brute-Force-Kosinus reicht (keine Vektor-DB). Falls strikt
-permissive Lizenz gewünscht: granite-278m oder arctic-embed-m-v2.0 als
-gleichgroße Apache-Alternative. Reihenfolge fürs Bauen: erst mit einer der
-Apache-Alternativen als Fallback-Plan absichern, real auf eigenen Artikeln
-messen (Phone-CPU-Latenz!), dann festlegen.
+**Empfehlung (aktualisiert 2026-07-17 — Lizenz-Entscheidung):** Nutzer will
+für eine mögliche Commercial-Strategie durchgehend **Apache-2.0/MIT statt
+Gemma-Terms**. Primärkandidat ist damit **granite-embedding-278m-multilingual
+(Apache-2.0)**, nicht mehr EmbeddingGemma — nahezu gleiche Größe/Qualität,
+sauberere Lizenz. `snowflake-arctic-embed-m-v2.0` (ebenfalls Apache-2.0) als
+Zweitkandidat. EmbeddingGemma bleibt als Qualitäts-Referenz zum Vergleichen,
+aber nicht im Produktpfad. Vor Festlegung: auf eigenen Artikeln Phone-CPU-
+Latenz messen (Zahlen fehlen bislang für beide Kandidaten).
 
 Quellen: ai.google.dev/gemma/docs/embeddinggemma, developers.googleblog.com,
 huggingface.co/google/embeddinggemma-300m, arxiv.org/pdf/2509.20354,
 huggingface.co/Qwen/Qwen3-Embedding-0.6B, huggingface.co/Snowflake/…-m-v2.0,
 ibm.com (granite), github.com/MinishLab/model2vec, milvus.io, bentoml.com
+
+## 13. Erster Nutzertest (2026-07-17): drei Bugs gefunden + zwei neue Feature-Forks
+
+Nutzer-Feedback zu Dev Build 18 (Screenshots), alle drei Punkte in derselben
+Session gefixt (core-Tests 46/46):
+
+1. **Themen-Tagging bei Videos kaputt:** Die Health-Regel matchte das bloße
+   Wort „watch" — jede YouTube-URL enthält `/watch?v=`, also bekam **jedes
+   Video fälschlich „Fitness"**, worüber dann sogar Fitness-Seiten als
+   „verwandt" zu einem LEGO-Bastelvideo erschienen (menshealth.com,
+   honehealth.com). Fix: „watch" raus, `smartwatch` rein (Kotlin + Python,
+   Parität gewahrt). **Strukturelle Ursache dahinter:** Tagging lief nur auf
+   der URL — bei opaken URLs wie YouTube gibt die keine Signale her. Fix:
+   `Categorizer.topics()` läuft jetzt bei der Anreicherung auf Titel +
+   One-Liner + Artikeltext, nicht mehr nur auf dem URL-Slug.
+2. **Zu lange Notification-Titel:** `nvidia/personaplex-7b-v1 · Hugging
+   Face` ist der rohe `<title>`-Tag. Neues `Headline`-Modul leitet für
+   HuggingFace/GitHub den Namen direkt aus dem URL-Pfad ab (→ „Personaplex
+   7b v1", „VibeVoice ASR"); für alles andere wird die Site-Suffix-Dublette
+   entfernt und wortgrenzen-sauber gekürzt. **Ehrlicher Rahmen:** Beliebige
+   lange Artikeltitel auf 1–4 knackige Wörter zu verdichten braucht ein
+   LLM (Zusammenfassungs-Stufe) — reine Heuristik schafft nur die
+   mechanischen Fälle (Site-Suffix, Repo-Namen).
+3. **Falsche Assoziationen durch Werbetext:** HuggingFace zeigt auf jeder
+   Modellseite dieselbe Standard-Beschreibung („We're on a journey to
+   advance…") — das landete unverändert im TF-IDF-Korpus und ließ beliebige
+   HF-Seiten „verwandt" erscheinen. Fix: `description` fliegt komplett aus
+   dem Ähnlichkeits-Text (Titel+Label+Topics+Content reichen); zusätzlich
+   erkennt ein DB-Duplikat-Check („taucht dieser Text bei ≥2 anderen
+   Einträgen identisch auf?") **jede** seitenweite Standard-Beschreibung
+   generisch, ohne Host-Blockliste. Für YouTube-Sponsor-/Affiliate-Text
+   (Screenshot 3: „…commission…Set up the Mobbin MCP…") ergänzend eine
+   Promo-Text-Erkennung (Schlüsselwörter + URL-Dichte) — beide Fälle fallen
+   auf die Lead-Sätze des echten Artikeltexts zurück statt auf Werbetext.
+
+**Noch offen (nicht in diesem Fix):** Echte YouTube-Transkripte statt
+Videobeschreibung — das ist die ToS-Grauzone aus Kapitel 11, bewusst nicht
+automatisch angegangen.
+
+### Neue Feature-Forks (Backlog, noch nicht gestartet)
+
+Nutzerwunsch: „Netzwerk-Graph der verknüpften Artikel navigierbar in AR"
+plus die bereits notierte multimodale Anreicherung (Screenshots/Bilder +
+Text gemeinsam mit einem Modell wie Gemma 4 E2B strukturieren). Beides
+bewusst als **parallele Feature-Forks** vorgemerkt, aber explizit
+zurückgestellt bis die aktuellen Bugfixes verifiziert sind:
+
+- **Fork A — Multimodales lokales Modell:** Nach dem Nutzertest der
+  Embedding-Schicht gemeinsam challengen, wie viel „Intelligenz" wirklich
+  nötig ist, und ob ein multimodales Modell (Gemma 4 E2B o. Ä.) Screenshots
+  + Seitenbilder + Text gemeinsam strukturieren/suchbar machen sollte.
+  **Lizenz-Vorbehalt:** Gemma 4 hat wie EmbeddingGemma Gemma-Terms, nicht
+  Apache/MIT — fließt in dieselbe Commercial-Prüfung wie Kapitel 12 ein.
+- **Fork B — AR-Netzwerk-Graph:** Die Tab-Sammlung als navigierbarer
+  Beziehungsgraph in Augmented Reality erfahrbar machen. Noch nicht
+  recherchiert (ARCore/Filament vs. Scene-Viewer/WebXR, Force-Directed-
+  Layout-Performance bei 700+ Knoten in AR, Interaktionsmodell) — eigene
+  Research-Runde nötig, bevor geplant wird.
+
+Vorgehen laut Nutzer: „Erst die Verbesserungen fertig machen" — beide Forks
+bleiben Backlog-Einträge, keine Umsetzung in dieser Session.
 
 ## 10. Entscheidungslog
 
@@ -412,16 +475,21 @@ ibm.com (granite), github.com/MinishLab/model2vec, milvus.io, bentoml.com
 | 2026-07-05 | Erst Problemraum & Feasibility, dann Implementierung | beschlossen |
 | 2026-07-05 | MVP-Fokus: Context-on-Sight, Nr. 2 Wochen-Digest (rudimentär) | beschlossen (Nutzer) |
 | 2026-07-05 | Compute: on-device + Cloud (BYOK) als Produkt; Home-Lab nur optionales Backend | beschlossen (Nutzer) |
-| offen | Preview-2-Scope (Kapitel 8) | wartet auf Nutzer-Freigabe |
+| 2026-07-05 | Preview-2-Scope (Kapitel 8) freigegeben, Schritt 1 gebaut & released | beschlossen (Nutzer) |
 | offen | BYOK-Anbieter für narrative Digests (Claude/Gemini/konfigurierbar) | Diskussion |
 | 2026-07-05 | YouTube: Share-Intent + oEmbed als Weg; WebView-Scrape der WL verworfen (Konto-Risiko) | beschlossen |
-| offen | Takeout-Test: enthält der Export „Später ansehen"? | Nutzer prüft |
-| 2026-07-05 | Embedding-Modell: EmbeddingGemma-300m (ONNX int8, Dim 256); granite-278m/arctic-m-v2 als Apache-Fallback; auf eigenen Artikeln messen vor Festlegung | empfohlen |
+| 2026-07-05 | Embedding-Modell v1: TF-IDF-Kosinus (lizenzfrei, Kotlin pur) hinter `TextSimilarity`-API | umgesetzt |
+| 2026-07-17 | Embedding-Modell v2 (ONNX): granite-278m/arctic-m-v2 (Apache-2.0) statt EmbeddingGemma — strikte Lizenz-Vorgabe für Commercial-Strategie | beschlossen (Nutzer) |
 | offen | YT-Transcript-Weg (ToS-Abwägung: offiziell unmöglich, inoffiziell Grauzone) | wartet auf Nutzer |
-| offen | Takeout-Test: enthält der Playlist-Export Watch Later? | Nutzer macht Test-Export |
+| 2026-07-17 | Takeout enthält KEINE Playlist-/WL-Option mehr (Nutzer-Test, Screenshot-bestätigt) — WL-Bestand nur manuell via Share | **geklärt, geschlossen** |
 | 2026-07-05 | YT-Ingestion primär via Share-Intent (ToS-sauber, geht schon) | empfohlen |
-| 2026-07-05 | Fetch-Kaskade: OkHttp → WebView+Readability → Screenshot | empfohlen |
-| 2026-07-05 | On-device: EmbeddingGemma + Gemma 4 E2B (LiteRT-LM) nur inkrementell; Backfill/Digests im Home-Lab | empfohlen |
+| 2026-07-05 | Fetch-Kaskade: OkHttp → WebView+Readability → Screenshot | empfohlen (WebView/Screenshot noch nicht gebaut) |
+| 2026-07-17 | Bugfix: „watch"-Regex tagged jedes YouTube-Video fälschlich als „Fitness" | behoben (Kotlin+Python) |
+| 2026-07-17 | Themen-Tagging nach Anreicherung: aus Titel+Beschreibung+Content statt nur URL-Slug | umgesetzt |
+| 2026-07-17 | Notification-Headline: HF/GitHub-Repo-Name aus URL-Pfad; generisch Site-Suffix strippen | umgesetzt |
+| 2026-07-17 | Boilerplate-/Promo-Erkennung (DB-Duplikat-Check + Schlüsselwörter) filtert One-Liner & Ähnlichkeits-Korpus | umgesetzt |
+| 2026-07-17 | Neue Feature-Forks vorgemerkt: (A) multimodales lokales Modell, (B) AR-Netzwerk-Graph — beide Backlog, noch nicht gestartet | vorgemerkt |
+| 2026-07-17 | On-device LLM-Tier (Gemma 4 E2B) für Summaries/Multimodal: Lizenzfrage offen, jetzt Teil von Fork A statt Direktentscheidung; Backfill/Digests bleiben Home-Lab-/Cloud-Sache | zurückgestellt (war „empfohlen") |
 
 ---
 *Generated by AI (Claude Code Session). Quellen: Nutzerinterview (Chat),

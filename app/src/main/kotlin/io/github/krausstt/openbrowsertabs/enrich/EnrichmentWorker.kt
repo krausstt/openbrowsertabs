@@ -20,7 +20,9 @@ import io.github.krausstt.openbrowsertabs.CATEGORY_NAMES
 import io.github.krausstt.openbrowsertabs.MainActivity
 import io.github.krausstt.openbrowsertabs.R
 import io.github.krausstt.openbrowsertabs.TOPIC_NAMES
+import io.github.krausstt.openbrowsertabs.core.Categorizer
 import io.github.krausstt.openbrowsertabs.core.Enrichment
+import io.github.krausstt.openbrowsertabs.core.Headline
 import io.github.krausstt.openbrowsertabs.core.Snippets
 import io.github.krausstt.openbrowsertabs.core.TextSimilarity
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
@@ -72,19 +74,34 @@ class EnrichmentWorker(
         return when (val outcome = Enrichment.enrich(link.canonicalUrl)) {
             is Enrichment.Outcome.Enriched -> {
                 val a = outcome.article
-                // catchy one-liner: page description, else lead sentences of
-                // the article text (the PrismML case: og:description missing)
-                val oneLiner = a.description ?: Snippets.lead(a.text, 200)
+                // catchy one-liner: page description, unless it's a fixed
+                // site-wide default (e.g. HuggingFace's identical tagline on
+                // every model page) or sponsor/affiliate-heavy (common in
+                // YouTube descriptions) — then fall back to the article's
+                // own lead sentences (the PrismML case: og:description missing)
+                val rawDescription = a.description
+                val useRawDescription = rawDescription != null &&
+                    store.countSharedDescription(rawDescription, link.id) < 2 &&
+                    !Snippets.isPromotional(rawDescription)
+                val oneLiner = rawDescription.takeIf { useRawDescription } ?: Snippets.lead(a.text, 200)
+
+                // topics from real content beat URL-slug guessing, especially
+                // for opaque URLs like youtube.com/watch?v=<id>
+                val topicSource = listOfNotNull(a.title, oneLiner, a.text?.take(2000))
+                    .joinToString(" ")
+                val refinedTopics = Categorizer.topics(topicSource)
+
                 store.applyEnrichment(
                     link.id, state = "done",
                     title = a.title, description = oneLiner, content = a.text,
                     siteName = a.siteName, publishedAt = a.publishedAt,
+                    topics = refinedTopics,
                 )
                 val related = computeRelated(store, link.id)
                 if (notify) {
                     postNotification(
                         link.id,
-                        title = a.title ?: link.host,
+                        title = Headline.shortHeadline(a.title, outcome.finalUrl),
                         text = buildNotificationText(store, link, oneLiner, related),
                     )
                 }
