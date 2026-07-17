@@ -25,6 +25,7 @@ data class LinkEntity(
     val publishedAt: String?,
     val enrichmentState: String, // pending | done | unfetchable
     val enrichedAt: Long?,
+    val relatedIds: List<Long>,
 )
 
 /**
@@ -33,7 +34,7 @@ data class LinkEntity(
  * implementation later (Room KMP or SQLDelight for the iPad port).
  */
 class LinkStore(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "links.db", null, 2) {
+    SQLiteOpenHelper(context.applicationContext, "links.db", null, 3) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -58,10 +59,17 @@ class LinkStore(context: Context) :
         db.execSQL("CREATE INDEX idx_links_status ON links(status)")
         db.execSQL("CREATE INDEX idx_links_category ON links(category)")
         migrateToV2(db)
+        migrateToV3(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) migrateToV2(db)
+        if (oldVersion < 3) migrateToV3(db)
+    }
+
+    private fun migrateToV3(db: SQLiteDatabase) {
+        // comma-separated link ids, computed at enrichment time
+        db.execSQL("ALTER TABLE links ADD COLUMN related_ids TEXT")
     }
 
     private fun migrateToV2(db: SQLiteDatabase) {
@@ -79,7 +87,7 @@ class LinkStore(context: Context) :
     private val entityColumns =
         "id, canonical_url, original_url, host, title, label, category, topics, " +
             "status, n_sightings, first_seen_at, last_seen_at, description, " +
-            "site_name, published_at, enrichment_state, enriched_at"
+            "site_name, published_at, enrichment_state, enriched_at, related_ids"
 
     /**
      * Insert the link or, if the canonical URL is already known, record a new
@@ -140,6 +148,36 @@ class LinkStore(context: Context) :
             "SELECT $entityColumns FROM links WHERE $where ORDER BY last_seen_at DESC",
             args.toTypedArray(),
         ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+    }
+
+    fun byIds(ids: List<Long>): List<LinkEntity> {
+        if (ids.isEmpty()) return emptyList()
+        val placeholders = ids.joinToString(",") { "?" }
+        val rows = readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE id IN ($placeholders)",
+            ids.map { it.toString() }.toTypedArray(),
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+        // preserve the ranking order of ids
+        val byId = rows.associateBy { it.id }
+        return ids.mapNotNull { byId[it] }
+    }
+
+    /** id + text material for the similarity corpus (content capped in SQL). */
+    fun similarityDocs(): List<Pair<Long, String>> =
+        readableDatabase.rawQuery(
+            "SELECT id, COALESCE(title,'') || ' ' || COALESCE(label,'') || ' ' || " +
+                "COALESCE(description,'') || ' ' || COALESCE(topics,'') || ' ' || " +
+                "COALESCE(substr(content,1,1500),'') FROM links",
+            null,
+        ).use { c ->
+            generateSequence { if (c.moveToNext()) c.getLong(0) to c.getString(1) else null }.toList()
+        }
+
+    fun updateRelated(id: Long, relatedIds: List<Long>) {
+        val values = ContentValues().apply {
+            put("related_ids", relatedIds.joinToString(","))
+        }
+        writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
     }
 
     fun byCanonicalUrl(url: String): LinkEntity? =
@@ -227,6 +265,8 @@ class LinkStore(context: Context) :
         enrichmentState = getString(getColumnIndexOrThrow("enrichment_state")),
         enrichedAt = if (isNull(getColumnIndexOrThrow("enriched_at"))) null
         else getLong(getColumnIndexOrThrow("enriched_at")),
+        relatedIds = getStringOrNullAt("related_ids")
+            ?.split(",")?.mapNotNull { it.toLongOrNull() } ?: emptyList(),
     )
 
     private fun Cursor.getStringOrNullAt(column: String): String? {

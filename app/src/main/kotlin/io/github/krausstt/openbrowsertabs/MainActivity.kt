@@ -58,14 +58,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 
-val CATEGORY_NAMES = mapOf(
-    "article" to "Artikel/News", "blog" to "Blog", "repo" to "Repo",
-    "model_or_dataset" to "Modell/Dataset", "shopping" to "Shopping",
-    "discussion" to "Diskussion", "travel" to "Reise",
-    "search_query" to "Suchanfrage", "docs" to "Doku", "video" to "Video",
-    "paper" to "Paper", "other" to "Sonstiges",
-)
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -201,8 +193,12 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
     }
 
     selectedLink?.let { link ->
+        var related by remember(link.id) { mutableStateOf<List<LinkEntity>>(emptyList()) }
+        LaunchedEffect(link.id) { related = vm.relatedFor(link) }
         LinkDetailDialog(
             link = link,
+            related = related,
+            onRelatedClick = { selectedLink = it },
             onDismiss = { selectedLink = null },
             onOpen = {
                 runCatching {
@@ -215,7 +211,13 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
 }
 
 @Composable
-private fun LinkDetailDialog(link: LinkEntity, onDismiss: () -> Unit, onOpen: () -> Unit) {
+private fun LinkDetailDialog(
+    link: LinkEntity,
+    related: List<LinkEntity>,
+    onRelatedClick: (LinkEntity) -> Unit,
+    onDismiss: () -> Unit,
+    onOpen: () -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -225,6 +227,22 @@ private fun LinkDetailDialog(link: LinkEntity, onDismiss: () -> Unit, onOpen: ()
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 link.description?.let {
                     Text(it, style = MaterialTheme.typography.bodyMedium)
+                }
+                if (related.isNotEmpty()) {
+                    Text(
+                        "Hängt zusammen mit",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    related.forEach { r ->
+                        Text(
+                            text = "🔗 " + (r.label ?: r.title ?: r.host),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 2,
+                            modifier = Modifier.clickable { onRelatedClick(r) },
+                        )
+                    }
                 }
                 val meta = buildList {
                     add(CATEGORY_NAMES[link.category] ?: link.category)

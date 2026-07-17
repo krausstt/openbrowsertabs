@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.krausstt.openbrowsertabs.core.LinkParser
 import io.github.krausstt.openbrowsertabs.core.LinkResolution
+import io.github.krausstt.openbrowsertabs.core.TextSimilarity
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.data.LinkStore
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
@@ -96,6 +97,21 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
     fun consumeMessage() {
         _state.value = _state.value.copy(message = null)
     }
+
+    /** Related links for the detail view; computes lazily for rows enriched
+     *  before the association layer existed. */
+    suspend fun relatedFor(link: LinkEntity): List<LinkEntity> =
+        withContext(Dispatchers.IO) {
+            if (link.relatedIds.isEmpty() && link.enrichmentState == "done") {
+                val docs = store.similarityDocs()
+                    .map { (id, text) -> TextSimilarity.Doc(id, text) }
+                val related = TextSimilarity.topRelated(docs, link.id, k = 3).map { it.id }
+                store.updateRelated(link.id, related)
+                store.byIds(related)
+            } else {
+                store.byIds(link.relatedIds)
+            }
+        }
 
     private fun setStatusAnd(id: Long, status: String) {
         viewModelScope.launch {

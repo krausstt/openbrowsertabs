@@ -16,9 +16,13 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import io.github.krausstt.openbrowsertabs.CATEGORY_NAMES
 import io.github.krausstt.openbrowsertabs.MainActivity
 import io.github.krausstt.openbrowsertabs.R
+import io.github.krausstt.openbrowsertabs.TOPIC_NAMES
 import io.github.krausstt.openbrowsertabs.core.Enrichment
+import io.github.krausstt.openbrowsertabs.core.Snippets
+import io.github.krausstt.openbrowsertabs.core.TextSimilarity
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.data.LinkStore
 import kotlinx.coroutines.delay
@@ -62,21 +66,26 @@ class EnrichmentWorker(
         // search queries have no fetchable article — label already says it all
         if (link.category == "search_query") {
             store.applyEnrichment(link.id, state = "done", title = link.label)
+            computeRelated(store, link.id)
             return false
         }
         return when (val outcome = Enrichment.enrich(link.canonicalUrl)) {
             is Enrichment.Outcome.Enriched -> {
                 val a = outcome.article
+                // catchy one-liner: page description, else lead sentences of
+                // the article text (the PrismML case: og:description missing)
+                val oneLiner = a.description ?: Snippets.lead(a.text, 200)
                 store.applyEnrichment(
                     link.id, state = "done",
-                    title = a.title, description = a.description, content = a.text,
+                    title = a.title, description = oneLiner, content = a.text,
                     siteName = a.siteName, publishedAt = a.publishedAt,
                 )
+                val related = computeRelated(store, link.id)
                 if (notify) {
                     postNotification(
                         link.id,
                         title = a.title ?: link.host,
-                        text = a.description ?: "Gespeichert & angereichert · ${link.host}",
+                        text = buildNotificationText(store, link, oneLiner, related),
                     )
                 }
                 false
@@ -95,6 +104,38 @@ class EnrichmentWorker(
             }
             is Enrichment.Outcome.Transient -> true
         }
+    }
+
+    /** Compute + persist top-3 related links; returns them for the notification. */
+    private fun computeRelated(store: LinkStore, linkId: Long): List<LinkEntity> {
+        val docs = store.similarityDocs().map { (id, text) -> TextSimilarity.Doc(id, text) }
+        val related = TextSimilarity.topRelated(docs, targetId = linkId, k = 3)
+        store.updateRelated(linkId, related.map { it.id })
+        return store.byIds(related.map { it.id })
+    }
+
+    private fun buildNotificationText(
+        store: LinkStore,
+        link: LinkEntity,
+        oneLiner: String?,
+        related: List<LinkEntity>,
+    ): String {
+        val fresh = store.byId(link.id) ?: link
+        val lines = mutableListOf<String>()
+        oneLiner?.let { lines.add(it) }
+        val tags = buildList {
+            add(CATEGORY_NAMES[fresh.category] ?: fresh.category)
+            fresh.topics.filter { it != "untagged" }.take(2)
+                .forEach { add(TOPIC_NAMES[it] ?: it) }
+        }
+        lines.add("🏷 " + tags.joinToString(" · "))
+        if (related.isNotEmpty()) {
+            val names = related.joinToString(" · ") { r ->
+                (r.label ?: r.title ?: r.host).take(45)
+            }
+            lines.add("🔗 Hängt zusammen mit: $names")
+        }
+        return lines.joinToString("\n")
     }
 
     private fun postNotification(linkId: Long, title: String, text: String) {
