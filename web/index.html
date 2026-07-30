@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenBrowserTabs — a second brain for the tabs you never close</title>
+<meta name="description" content="Android app and pipeline that turns shared links into a typed knowledge graph: on-device enrichment, association engine, weekly digest.">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='5' fill='%232a78d6'/><g fill='white'><rect x='5' y='6' width='11' height='3' rx='1.5' opacity='.55'/><rect x='5' y='10.5' width='14' height='3' rx='1.5' opacity='.8'/><rect x='5' y='15' width='9' height='3' rx='1.5'/></g></svg>">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Android · Kotlin · on-device enrichment</p>
+    <h1>A second brain for the tabs you never close</h1>
+    <p class="lede">
+      Share a link from any app. It gets fetched, cleaned, categorised and
+      <em>connected to what you already saved</em> — before you have finished
+      putting the phone down. Built after a real collection of
+      <strong>2,562 open browser tabs</strong> refused to be useful.
+    </p>
+    <nav class="cta">
+      <a class="btn primary" href="#demo">Try the engine ↓</a>
+      <a class="btn" href="https://github.com/krausstt/openbrowsertabs">Source</a>
+      <a class="btn" href="https://github.com/krausstt/openbrowsertabs/releases">Download APK</a>
+    </nav>
+    <dl class="stats">
+      <div><dt>Raw tabs ingested</dt><dd>2,562</dd></div>
+      <div><dt>After dedup &amp; canonicalisation</dt><dd>1,385</dd></div>
+      <div><dt>Duplicate rate found</dt><dd>46%</dd></div>
+      <div><dt>Core unit tests</dt><dd>46 ✓</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main>
+
+<section id="demo" class="wrap block">
+  <h2>1 · Share a link, watch the pipeline run</h2>
+  <p class="intro">
+    This runs the <strong>real</strong> logic from <code>core/</code>, ported to
+    JavaScript: URL canonicalisation, category rules, topic tagging and the
+    TF-IDF association scorer. Nothing here is mocked — pick a link or paste
+    your own.
+  </p>
+
+  <div class="demo-grid">
+    <div class="demo-input">
+      <label for="url-in">URL</label>
+      <input id="url-in" type="url" spellcheck="false"
+             value="https://huggingface.co/nvidia/nemotron-voice-1b?utm_source=newsletter">
+      <label for="title-in">Page title</label>
+      <input id="title-in" type="text" value="nvidia/nemotron-voice-1b">
+      <label for="text-in">Page text / description</label>
+      <textarea id="text-in" rows="3">Real-time speech-to-speech model for natural full-duplex conversation, with streaming automatic speech recognition and low-latency synthesis.</textarea>
+      <button id="run-btn" class="btn primary">Share to OpenBrowserTabs</button>
+      <p class="presets">
+        Or try:
+        <button class="chip" data-preset="mcp">an MCP tutorial</button>
+        <button class="chip" data-preset="esp">an ESP32 build log</button>
+        <button class="chip" data-preset="shop">a shop page</button>
+        <button class="chip" data-preset="noise">something unrelated</button>
+      </p>
+    </div>
+
+    <div class="demo-output">
+      <p class="phone-label">What the phone shows</p>
+      <div class="phone">
+        <div class="notif" id="notif">
+          <div class="notif-app"><span class="notif-icon"></span>OpenBrowserTabs · now</div>
+          <div class="notif-title" id="n-title">—</div>
+          <div class="notif-body" id="n-body"></div>
+        </div>
+      </div>
+      <div class="pipeline" id="pipeline"></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap block">
+  <h2>2 · Why one “related” edge is not enough</h2>
+  <p class="intro">
+    A real false positive from the running app: <code>microsoft/agent-framework</code>
+    was linked to <code>microsoft/VibeVoice</code>. Both are Microsoft, but one is
+    agent orchestration and the other is speech synthesis — no actual relation.
+    Meanwhile the genuinely useful link (both discuss <strong>MCP</strong>) was
+    scored the same way. The fix is typed edges, weighted differently.
+  </p>
+  <div class="toggle-row">
+    <button class="btn" id="typed-toggle" data-on="true">Typed edges: <strong>on</strong></button>
+    <span class="hint" id="toggle-hint">Organisation matches are demoted to a weak, grey edge.</span>
+  </div>
+  <div class="case" id="case-study"></div>
+</section>
+
+<section class="wrap block">
+  <h2>3 · The collection as a graph</h2>
+  <p class="intro">
+    70 public reference links, connected by the four edge types. Drag to
+    explore, click a node for detail, filter by edge type to see how much of
+    the structure each signal carries.
+  </p>
+  <div class="legend" id="legend"></div>
+  <div class="graph-shell">
+    <canvas id="graph"></canvas>
+    <aside class="node-card" id="node-card" hidden></aside>
+  </div>
+  <p class="fine">
+    Layout: force-directed, edge weight as spring strength — the same weights
+    the planned AR view will use.
+  </p>
+</section>
+
+<section class="wrap block">
+  <h2>4 · Browse the corpus</h2>
+  <div class="filters">
+    <input id="search" type="search" placeholder="Filter by title, host or topic…">
+    <div class="chips" id="cat-chips"></div>
+  </div>
+  <p class="count" id="count"></p>
+  <ul class="links" id="link-list"></ul>
+</section>
+
+<section class="wrap block">
+  <h2>How it fits together</h2>
+  <pre class="diagram">
+ Android share sheet          core/ (pure Kotlin, JVM-testable)         SQLite
+ ┌──────────────┐            ┌────────────────────────────────┐        ┌──────────┐
+ │ any app  →   │──text──►   │ LinkParser  · extract + dedupe │───────►│ links    │
+ │ "Tab sichern"│            │ UrlNormalizer · AMP, trackers  │        │ entities │
+ └──────────────┘            │ RedirectResolver · share.google│        │ edges    │
+                             │ ArticleExtractor · jsoup       │        └────┬─────┘
+ WorkManager                 │ Categorizer · category + tags  │             │
+ ┌──────────────┐            │ TextSimilarity · TF-IDF cosine │             │
+ │ paced fetch  │──html──►   │ Headline · short display name  │        ┌────▼─────┐
+ │ 2–5 s/domain │            └────────────────────────────────┘        │ notify   │
+ └──────────────┘                                                      │ + digest │
+                                                                       └──────────┘
+  </pre>
+</section>
+
+<section class="wrap block">
+  <h2>Design decisions worth defending</h2>
+
+  <div class="decision">
+    <h3>TF-IDF before embeddings</h3>
+    <p>
+      The association layer shipped as plain Kotlin TF-IDF cosine — no model
+      download, no licence question, unit-testable on the JVM. It is good
+      enough to find <em>Parakeet</em> when you save <em>Canary</em>, and it
+      made the ONNX embedding upgrade a swap behind one interface rather than
+      a prerequisite. Ship the boring version that works.
+    </p>
+  </div>
+
+  <div class="decision">
+    <h3>Typed edges over a single similarity score</h3>
+    <p>
+      Verified against real captured data: “same organisation” produces
+      confident nonsense, “discusses the same technical standard” produces the
+      insight. Collapsing both into one number guarantees you cannot fix one
+      without breaking the other.
+    </p>
+  </div>
+
+  <div class="decision">
+    <h3>Apache-2.0 / MIT only in the product path</h3>
+    <p>
+      EmbeddingGemma scored best on quality per megabyte, but ships under the
+      Gemma Terms. The chosen model is
+      <code>granite-embedding-278m-multilingual</code> (Apache-2.0) — slightly
+      behind on paper, unencumbered in practice.
+    </p>
+  </div>
+
+  <div class="decision">
+    <h3>Empty beats fabricated</h3>
+    <p>
+      Below the similarity threshold the app shows no connections at all. A
+      wrong “related to” costs more trust than a missing one, and a second
+      brain that invents relationships is worse than a bookmark folder.
+    </p>
+  </div>
+
+  <div class="decision">
+    <h3>No guilt mechanics</h3>
+    <p>
+      No unread counter, no streak, no inbox-zero pressure. The research on
+      ADHD information behaviour is blunt about it: the pile is externalised
+      working memory, and shaming the user for its size is how read-later apps
+      become graveyards.
+    </p>
+  </div>
+</section>
+
+<section class="wrap block">
+  <h2>Tried and dropped</h2>
+  <ul class="dropped">
+    <li>
+      <strong>Scraping the private YouTube Watch Later list.</strong> Login
+      inside an app WebView is refused by Google, the DOM breaks on every
+      layout change, and it violates the terms with the main account at stake.
+      Google Takeout turned out to no longer offer playlists at all — verified
+      by screenshot, not assumed. Sharing individual videos is the boring,
+      durable path.
+    </li>
+    <li>
+      <strong>Screenshots as the primary enrichment input.</strong> A
+      multimodal model can read a page screenshot, but it sees one viewport,
+      costs far more tokens and loses to extracted text on every axis except
+      pages that defeat extraction. Demoted to a fallback.
+    </li>
+    <li>
+      <strong>A NotebookLM push integration.</strong> The API exists only for
+      Gemini Enterprise. The realistic design is a structured Markdown export,
+      or writing the digest to a Drive document that NotebookLM already
+      auto-syncs.
+    </li>
+    <li>
+      <strong>Room and Hilt in the MVP.</strong> The build environment cannot
+      run Android tooling, so every codegen dependency was an unverifiable
+      risk. Plain SQLite behind a small interface kept CI honest.
+    </li>
+  </ul>
+</section>
+
+<section class="wrap block">
+  <h2>Bugs the field test caught</h2>
+  <table class="bugs">
+    <thead><tr><th>Symptom</th><th>Root cause</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Every video tagged “fitness”, LEGO build linked to men's health</td>
+        <td>The health topic rule matched the bare word <code>watch</code> — and every YouTube URL contains <code>/watch?v=</code></td>
+        <td>Replaced with <code>smartwatch</code>; tags now computed from extracted text, not the URL slug</td>
+      </tr>
+      <tr>
+        <td>Unrelated Hugging Face pages all “related” to each other</td>
+        <td>The site-wide boilerplate description entered the similarity corpus</td>
+        <td>Descriptions excluded from scoring; any text repeated across ≥2 rows is treated as boilerplate</td>
+      </tr>
+      <tr>
+        <td>Notification title read <code>nvidia/model · Hugging Face</code></td>
+        <td>Raw <code>&lt;title&gt;</code> used verbatim</td>
+        <td>Repo name derived from the URL path; site suffix stripped elsewhere</td>
+      </tr>
+      <tr>
+        <td>Chrome shared <code>share.google/…</code> instead of the article</td>
+        <td>Google's share shortener hides the target behind a redirect</td>
+        <td>Redirect resolver follows known shorteners before saving; failures stay queued</td>
+      </tr>
+      <tr>
+        <td>App source file silently missing from CI</td>
+        <td>The privacy rule <code>data/</code> in <code>.gitignore</code> also matched the Kotlin <code>data</code> package</td>
+        <td>Anchored to <code>/data/</code>; verified with <code>git check-ignore</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<footer class="wrap">
+  <p>
+    <a href="https://github.com/krausstt/openbrowsertabs">github.com/krausstt/openbrowsertabs</a>
+    · demo corpus is public reference material only, no personal data
+  </p>
+</footer>
+
+</main>
+
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

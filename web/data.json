@@ -1,0 +1,4213 @@
+{
+ "generated_by": "web/build_demo_data.py (real pipeline logic)",
+ "note": "Public demo corpus. No personal data.",
+ "nodes": [
+  {
+   "id": 0,
+   "url": "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2",
+   "host": "huggingface.co",
+   "title": "nvidia/parakeet-tdt-0.6b-v2",
+   "description": "Fast English automatic speech recognition model with token-and-duration transducer, punctuation and timestamps.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents",
+    "hardware"
+   ],
+   "org": "nvidia",
+   "standards": []
+  },
+  {
+   "id": 1,
+   "url": "https://huggingface.co/nvidia/canary-1b",
+   "host": "huggingface.co",
+   "title": "nvidia/canary-1b",
+   "description": "Multilingual speech recognition and translation model covering English, German, French and Spanish.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents",
+    "hardware"
+   ],
+   "org": "nvidia",
+   "standards": []
+  },
+  {
+   "id": 2,
+   "url": "https://huggingface.co/openai/whisper-large-v3",
+   "host": "huggingface.co",
+   "title": "openai/whisper-large-v3",
+   "description": "Robust multilingual speech recognition and translation model trained on large-scale weak supervision.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": "openai",
+   "standards": []
+  },
+  {
+   "id": 3,
+   "url": "https://huggingface.co/microsoft/VibeVoice-1.5B",
+   "host": "huggingface.co",
+   "title": "microsoft/VibeVoice-1.5B",
+   "description": "Long-form expressive text-to-speech model supporting multi-speaker conversational audio synthesis.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents",
+    "audio_music"
+   ],
+   "org": "microsoft",
+   "standards": [
+    "text-to-speech"
+   ]
+  },
+  {
+   "id": 4,
+   "url": "https://github.com/ggml-org/whisper.cpp",
+   "host": "github.com",
+   "title": "ggml-org/whisper.cpp",
+   "description": "Plain C/C++ port of Whisper for on-device inference with GGUF quantization, no runtime dependencies.",
+   "category": "repo",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": "ggml-org",
+   "standards": [
+    "gguf",
+    "quantization"
+   ]
+  },
+  {
+   "id": 5,
+   "url": "https://arxiv.org/abs/2212.04356",
+   "host": "arxiv.org",
+   "title": "Robust Speech Recognition via Large-Scale Weak Supervision",
+   "description": "The Whisper paper: scaling weakly supervised training to 680k hours of multilingual speech data.",
+   "category": "paper",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 6,
+   "url": "https://github.com/microsoft/agent-framework",
+   "host": "github.com",
+   "title": "microsoft/agent-framework",
+   "description": "Framework for building, orchestrating and deploying AI agents and multi-agent workflows, with MCP support.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": "microsoft",
+   "standards": [
+    "mcp"
+   ]
+  },
+  {
+   "id": 7,
+   "url": "https://github.com/microsoft/autogen",
+   "host": "github.com",
+   "title": "microsoft/autogen",
+   "description": "Multi-agent conversation framework for building LLM applications with cooperating agents.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": "microsoft",
+   "standards": []
+  },
+  {
+   "id": 8,
+   "url": "https://github.com/microsoft/semantic-kernel",
+   "host": "github.com",
+   "title": "microsoft/semantic-kernel",
+   "description": "SDK that integrates large language models with conventional programming languages via plugins and planners.",
+   "category": "repo",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": "microsoft",
+   "standards": []
+  },
+  {
+   "id": 9,
+   "url": "https://github.com/modelcontextprotocol/servers",
+   "host": "github.com",
+   "title": "modelcontextprotocol/servers",
+   "description": "Reference implementations of Model Context Protocol servers for tools, resources and prompts.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": "modelcontextprotocol",
+   "standards": [
+    "model context protocol"
+   ]
+  },
+  {
+   "id": 10,
+   "url": "https://modelcontextprotocol.io/docs/getting-started/intro",
+   "host": "modelcontextprotocol.io",
+   "title": "Model Context Protocol documentation",
+   "description": "Open standard for connecting AI assistants to external tools, data sources and prompts over MCP.",
+   "category": "docs",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": [
+    "mcp",
+    "model context protocol"
+   ]
+  },
+  {
+   "id": 11,
+   "url": "https://github.com/langchain-ai/langgraph",
+   "host": "github.com",
+   "title": "langchain-ai/langgraph",
+   "description": "Library for building stateful multi-agent applications as graphs with cycles, checkpoints and human-in-the-loop.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops",
+    "data_science"
+   ],
+   "org": "langchain-ai",
+   "standards": []
+  },
+  {
+   "id": 12,
+   "url": "https://anthropic.com/engineering/building-effective-agents",
+   "host": "anthropic.com",
+   "title": "Building effective agents",
+   "description": "Engineering guidance on agent patterns: workflows versus autonomous agents, tool design and evaluation.",
+   "category": "other",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 13,
+   "url": "https://github.com/ollama/ollama",
+   "host": "github.com",
+   "title": "ollama/ollama",
+   "description": "Run large language models locally with a simple CLI and REST API, GGUF model library included.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": "ollama",
+   "standards": [
+    "gguf"
+   ]
+  },
+  {
+   "id": 14,
+   "url": "https://github.com/ggml-org/llama.cpp",
+   "host": "github.com",
+   "title": "ggml-org/llama.cpp",
+   "description": "LLM inference in C/C++ with GGUF quantization, running on CPU, GPU and mobile devices.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops",
+    "hardware"
+   ],
+   "org": "ggml-org",
+   "standards": [
+    "gguf",
+    "quantization"
+   ]
+  },
+  {
+   "id": 15,
+   "url": "https://github.com/vllm-project/vllm",
+   "host": "github.com",
+   "title": "vllm-project/vllm",
+   "description": "High-throughput LLM serving engine using PagedAttention for efficient KV cache memory management.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": "vllm-project",
+   "standards": []
+  },
+  {
+   "id": 16,
+   "url": "https://ai.google.dev/edge/litert",
+   "host": "ai.google.dev",
+   "title": "LiteRT overview",
+   "description": "Google runtime for on-device machine learning inference on Android, formerly TensorFlow Lite.",
+   "category": "other",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 17,
+   "url": "https://onnxruntime.ai/docs/get-started/with-java.html",
+   "host": "onnxruntime.ai",
+   "title": "ONNX Runtime documentation",
+   "description": "Cross-platform inference engine running ONNX models on mobile, server and edge hardware.",
+   "category": "docs",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": [
+    "onnx"
+   ]
+  },
+  {
+   "id": 18,
+   "url": "https://huggingface.co/ibm-granite/granite-embedding-278m-multilingual",
+   "host": "huggingface.co",
+   "title": "ibm-granite/granite-embedding-278m-multilingual",
+   "description": "Apache-2.0 multilingual text embedding model with 768 dimensions covering twelve languages.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": "ibm-granite",
+   "standards": [
+    "embedding"
+   ]
+  },
+  {
+   "id": 19,
+   "url": "https://huggingface.co/google/embeddinggemma-300m",
+   "host": "huggingface.co",
+   "title": "google/embeddinggemma-300m",
+   "description": "On-device text embedding model with Matryoshka dimensions and quantization-aware training.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": "google",
+   "standards": [
+    "embedding",
+    "matryoshka",
+    "quantization"
+   ]
+  },
+  {
+   "id": 20,
+   "url": "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B",
+   "host": "huggingface.co",
+   "title": "Qwen/Qwen3-Embedding-0.6B",
+   "description": "Multilingual embedding model with configurable output dimensions and strong retrieval benchmarks.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": "qwen",
+   "standards": [
+    "embedding"
+   ]
+  },
+  {
+   "id": 21,
+   "url": "https://huggingface.co/Snowflake/snowflake-arctic-embed-m-v2.0",
+   "host": "huggingface.co",
+   "title": "Snowflake/snowflake-arctic-embed-m-v2.0",
+   "description": "Apache-2.0 multilingual retrieval embedding model with Matryoshka representation learning.",
+   "category": "model_or_dataset",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": "snowflake",
+   "standards": [
+    "embedding",
+    "matryoshka"
+   ]
+  },
+  {
+   "id": 22,
+   "url": "https://github.com/MinishLab/model2vec",
+   "host": "github.com",
+   "title": "MinishLab/model2vec",
+   "description": "Distills sentence transformers into small static embedding models that run without a neural forward pass.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": "minishlab",
+   "standards": [
+    "embedding"
+   ]
+  },
+  {
+   "id": 23,
+   "url": "https://arxiv.org/abs/2509.20354",
+   "host": "arxiv.org",
+   "title": "EmbeddingGemma: Powerful and Lightweight Text Representations",
+   "description": "Technical report on a compact embedding model family designed for on-device retrieval.",
+   "category": "paper",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": [
+    "embedding"
+   ]
+  },
+  {
+   "id": 24,
+   "url": "https://arxiv.org/abs/2005.11401",
+   "host": "arxiv.org",
+   "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+   "description": "The original RAG paper combining a parametric generator with a non-parametric retrieval index.",
+   "category": "paper",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": [
+    "rag"
+   ]
+  },
+  {
+   "id": 25,
+   "url": "https://dl.acm.org/doi/10.1145/2926720",
+   "host": "dl.acm.org",
+   "title": "Novelty and Diversity in Recommender Systems",
+   "description": "Survey of evaluation and re-ranking approaches for diversity, novelty and serendipity in recommendation.",
+   "category": "other",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 26,
+   "url": "https://peerj.com/articles/cs-178",
+   "host": "peerj.com",
+   "title": "Serendipity-biased random walks for recommendation",
+   "description": "Graph embedding approach that biases DeepWalk transitions toward structurally near but topically distant nodes.",
+   "category": "other",
+   "topics": [
+    "llm_agents",
+    "data_science"
+   ],
+   "org": null,
+   "standards": [
+    "embedding"
+   ]
+  },
+  {
+   "id": 27,
+   "url": "https://github.com/facebookresearch/faiss",
+   "host": "github.com",
+   "title": "facebookresearch/faiss",
+   "description": "Library for efficient similarity search and clustering of dense vectors at scale.",
+   "category": "repo",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": "facebookresearch",
+   "standards": []
+  },
+  {
+   "id": 28,
+   "url": "https://sbert.net/",
+   "host": "sbert.net",
+   "title": "Sentence Transformers documentation",
+   "description": "Framework for computing dense sentence embeddings for semantic search, clustering and retrieval.",
+   "category": "other",
+   "topics": [
+    "llm_agents",
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": [
+    "embedding"
+   ]
+  },
+  {
+   "id": 29,
+   "url": "https://arxiv.org/abs/2304.09572",
+   "host": "arxiv.org",
+   "title": "An Ecosystem for Personal Knowledge Graphs: A Survey and Research Roadmap",
+   "description": "Survey defining personal knowledge graphs and their role in user-centric information systems.",
+   "category": "paper",
+   "topics": [
+    "data_science"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 30,
+   "url": "https://wikidata.org/wiki/Property:P1365",
+   "host": "wikidata.org",
+   "title": "Wikidata property: replaces",
+   "description": "Ontology property linking an entity to the predecessor it replaced, paired with the inverse replaced-by.",
+   "category": "docs",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 31,
+   "url": "https://github.com/SkepticMystic/graph-analysis",
+   "host": "github.com",
+   "title": "SkepticMystic/graph-analysis",
+   "description": "Obsidian plugin computing note similarity via Jaccard index, co-citation and link prediction.",
+   "category": "repo",
+   "topics": [
+    "coding_devops",
+    "data_science"
+   ],
+   "org": "skepticmystic",
+   "standards": []
+  },
+  {
+   "id": 32,
+   "url": "https://obsidian.md/",
+   "host": "obsidian.md",
+   "title": "Obsidian",
+   "description": "Local-first markdown knowledge base with bidirectional links and a graph view over the vault.",
+   "category": "other",
+   "topics": [
+    "data_science"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 33,
+   "url": "https://github.com/vasturiano/3d-force-graph",
+   "host": "github.com",
+   "title": "vasturiano/3d-force-graph",
+   "description": "Force-directed graph rendering in three dimensions with WebGL, including a WebXR variant.",
+   "category": "repo",
+   "topics": [
+    "coding_devops",
+    "data_science"
+   ],
+   "org": "vasturiano",
+   "standards": [
+    "force-directed",
+    "webxr"
+   ]
+  },
+  {
+   "id": 34,
+   "url": "https://developer.android.com/topic/libraries/architecture/workmanager",
+   "host": "developer.android.com",
+   "title": "WorkManager documentation",
+   "description": "Android API for deferrable background work with constraints, retries and guaranteed execution.",
+   "category": "docs",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 35,
+   "url": "https://developer.android.com/training/sharing/receive",
+   "host": "developer.android.com",
+   "title": "Receiving simple data from other apps",
+   "description": "How to register an Android share target with intent filters and handle incoming send intents.",
+   "category": "docs",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 36,
+   "url": "https://developer.android.com/develop/ui/compose/documentation",
+   "host": "developer.android.com",
+   "title": "Jetpack Compose documentation",
+   "description": "Declarative UI toolkit for Android with composable functions, state hoisting and Material 3.",
+   "category": "docs",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 37,
+   "url": "https://github.com/ImranR98/Obtainium",
+   "host": "github.com",
+   "title": "ImranR98/Obtainium",
+   "description": "Android app that installs and updates apps directly from GitHub releases and other sources.",
+   "category": "repo",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": "imranr98",
+   "standards": []
+  },
+  {
+   "id": 38,
+   "url": "https://jsoup.org/",
+   "host": "jsoup.org",
+   "title": "jsoup: Java HTML parser",
+   "description": "Library for parsing, traversing and cleaning HTML with a CSS-selector based API.",
+   "category": "other",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 39,
+   "url": "https://github.com/mozilla/readability",
+   "host": "github.com",
+   "title": "mozilla/readability",
+   "description": "Standalone version of the Firefox Reader View article extraction algorithm.",
+   "category": "repo",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": "mozilla",
+   "standards": [
+    "readability"
+   ]
+  },
+  {
+   "id": 40,
+   "url": "https://trafilatura.readthedocs.io/en/latest",
+   "host": "trafilatura.readthedocs.io",
+   "title": "Trafilatura documentation",
+   "description": "Python package for web text extraction, metadata parsing and boilerplate removal at scale.",
+   "category": "other",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 41,
+   "url": "https://espressif.com/en/products/socs/esp32-s3",
+   "host": "espressif.com",
+   "title": "ESP32-S3 product page",
+   "description": "Microcontroller with Wi-Fi, Bluetooth Low Energy and vector instructions for on-device machine learning.",
+   "category": "other",
+   "topics": [
+    "llm_agents",
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 42,
+   "url": "https://esphome.io/",
+   "host": "esphome.io",
+   "title": "ESPHome",
+   "description": "System for configuring ESP32 and ESP8266 devices with YAML and integrating them with Home Assistant.",
+   "category": "other",
+   "topics": [
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 43,
+   "url": "https://home-assistant.io/",
+   "host": "home-assistant.io",
+   "title": "Home Assistant",
+   "description": "Open source home automation platform running locally with integrations for thousands of devices.",
+   "category": "other",
+   "topics": [
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 44,
+   "url": "https://docs.zigbee2mqtt.io/",
+   "host": "docs.zigbee2mqtt.io",
+   "title": "Zigbee2MQTT documentation",
+   "description": "Bridge that exposes Zigbee devices to MQTT without a vendor gateway.",
+   "category": "docs",
+   "topics": [
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": [
+    "mqtt",
+    "zigbee"
+   ]
+  },
+  {
+   "id": 45,
+   "url": "https://wiki.seeedstudio.com/xiao_esp32s3_getting_started",
+   "host": "wiki.seeedstudio.com",
+   "title": "XIAO ESP32S3 getting started",
+   "description": "Compact ESP32-S3 development board with camera and microphone support for edge AI projects.",
+   "category": "shopping",
+   "topics": [
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 46,
+   "url": "https://github.com/espressif/esp-idf",
+   "host": "github.com",
+   "title": "espressif/esp-idf",
+   "description": "Official development framework for ESP32 series chips with FreeRTOS and peripheral drivers.",
+   "category": "repo",
+   "topics": [
+    "coding_devops",
+    "embedded_iot"
+   ],
+   "org": "espressif",
+   "standards": []
+  },
+  {
+   "id": 47,
+   "url": "https://raspberrypi.com/documentation/computers/getting-started.html",
+   "host": "raspberrypi.com",
+   "title": "Raspberry Pi documentation",
+   "description": "Setup and configuration guide for Raspberry Pi single-board computers and their operating system.",
+   "category": "docs",
+   "topics": [
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 48,
+   "url": "https://github.com/Klipper3d/klipper",
+   "host": "github.com",
+   "title": "Klipper3d/klipper",
+   "description": "3D printer firmware that offloads motion planning to a host computer for higher print speeds.",
+   "category": "repo",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": "klipper3d",
+   "standards": []
+  },
+  {
+   "id": 49,
+   "url": "https://printables.com/",
+   "host": "printables.com",
+   "title": "Printables",
+   "description": "Repository of downloadable 3D models with print profiles and community remixes.",
+   "category": "other",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 50,
+   "url": "https://all3dp.com/1/best-3d-printer-slicer-software",
+   "host": "all3dp.com",
+   "title": "Best 3D printer slicer software",
+   "description": "Comparison of slicing tools covering supports, adaptive layers and multi-material printing.",
+   "category": "article",
+   "topics": [
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 51,
+   "url": "https://tailscale.com/kb/1017/install",
+   "host": "tailscale.com",
+   "title": "Tailscale installation guide",
+   "description": "Mesh VPN built on WireGuard that connects devices without opening firewall ports.",
+   "category": "other",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": [
+    "wireguard"
+   ]
+  },
+  {
+   "id": 52,
+   "url": "https://docs.docker.com/compose",
+   "host": "docs.docker.com",
+   "title": "Docker Compose documentation",
+   "description": "Tool for defining and running multi-container applications from a declarative YAML file.",
+   "category": "docs",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 53,
+   "url": "https://proxmox.com/en/proxmox-virtual-environment/overview",
+   "host": "proxmox.com",
+   "title": "Proxmox Virtual Environment",
+   "description": "Open source virtualization platform combining KVM virtual machines and Linux containers.",
+   "category": "other",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 54,
+   "url": "https://caddyserver.com/docs",
+   "host": "caddyserver.com",
+   "title": "Caddy documentation",
+   "description": "Web server with automatic HTTPS certificate management and a simple configuration format.",
+   "category": "other",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 55,
+   "url": "https://sqlite.org/lang_with.html",
+   "host": "sqlite.org",
+   "title": "SQLite recursive common table expressions",
+   "description": "Reference for WITH RECURSIVE queries, the basis for graph traversal inside SQLite.",
+   "category": "other",
+   "topics": [
+    "coding_devops",
+    "data_science"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 56,
+   "url": "https://simonwillison.net/2025/Dec/31/llms-in-2025",
+   "host": "simonwillison.net",
+   "title": "Things we learned about LLMs in 2025",
+   "description": "Year in review covering model releases, pricing collapse, agents and local inference progress.",
+   "category": "other",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 57,
+   "url": "https://venturebeat.com/ai/what-enterprises-get-wrong-about-ai-agents",
+   "host": "venturebeat.com",
+   "title": "What enterprises get wrong about AI agents",
+   "description": "Analysis of evaluation gaps and autonomy risks in production agent deployments.",
+   "category": "article",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 58,
+   "url": "https://technologyreview.com/2026/07/13/1140343/what-anthropics-latest-ai-discovery-does-and-doesnt-show",
+   "host": "technologyreview.com",
+   "title": "What Anthropic's latest AI discovery does and doesn't show",
+   "description": "Critical read of interpretability findings and what they imply about model internals.",
+   "category": "other",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 59,
+   "url": "https://kdnuggets.com/building-local-ai-systems-qwen3-6-mcps",
+   "host": "kdnuggets.com",
+   "title": "Building Local AI Systems: Qwen3.6 + MCPs",
+   "description": "Tutorial on running a local model and wiring it to tools through the Model Context Protocol.",
+   "category": "article",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": [
+    "mcp",
+    "model context protocol"
+   ]
+  },
+  {
+   "id": 60,
+   "url": "https://techcrunch.com/2025/05/27/read-it-later-app-pocket-is-shutting-down-here-are-the-best-alternatives",
+   "host": "techcrunch.com",
+   "title": "Read-it-later app Pocket is shutting down",
+   "description": "Coverage of the Pocket shutdown and a comparison of surviving read-later services.",
+   "category": "article",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": [
+    "rag"
+   ]
+  },
+  {
+   "id": 61,
+   "url": "https://theverge.com/tech/rss-is-back",
+   "host": "theverge.com",
+   "title": "RSS never died",
+   "description": "Feature on the resurgence of feed readers as an antidote to algorithmic timelines.",
+   "category": "article",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 62,
+   "url": "https://reichelt.de/de/de/shop/produkt/esp32_s3_devkitc_1_n8r8-357289",
+   "host": "reichelt.de",
+   "title": "ESP32-S3 DevKitC development board",
+   "description": "Development board with 8 MB flash and 8 MB PSRAM for embedded prototyping.",
+   "category": "shopping",
+   "topics": [
+    "embedded_iot"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 63,
+   "url": "https://eu.store.bambulab.com/products/a1-mini",
+   "host": "eu.store.bambulab.com",
+   "title": "Bambu Lab A1 mini",
+   "description": "Compact 3D printer with automatic bed levelling and optional multi-colour filament system.",
+   "category": "shopping",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 64,
+   "url": "https://thomann.de/de/adam_audio_t5v.htm",
+   "host": "thomann.de",
+   "title": "ADAM Audio T5V studio monitor",
+   "description": "Two-way active nearfield monitor with a ribbon tweeter for home studio use.",
+   "category": "shopping",
+   "topics": [
+    "audio_music",
+    "hardware"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 65,
+   "url": "https://news.ycombinator.com/item?id=44762913",
+   "host": "news.ycombinator.com",
+   "title": "Hacker News discussion on link shorteners",
+   "description": "Thread about tracking redirects, privacy implications and unwrapping shortened URLs.",
+   "category": "discussion",
+   "topics": [
+    "untagged"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 66,
+   "url": "https://reddit.com/r/LocalLLaMA/comments/local_embedding_models",
+   "host": "reddit.com",
+   "title": "r/LocalLLaMA: which embedding model for local RAG",
+   "description": "Community comparison of small multilingual embedding models for offline retrieval setups.",
+   "category": "discussion",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": [
+    "embedding",
+    "rag"
+   ]
+  },
+  {
+   "id": 67,
+   "url": "https://reddit.com/r/selfhosted/comments/bookmark_managers",
+   "host": "reddit.com",
+   "title": "r/selfhosted: bookmark manager recommendations",
+   "description": "Discussion of self-hosted read-later and bookmarking tools after the Pocket shutdown.",
+   "category": "discussion",
+   "topics": [
+    "coding_devops"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 68,
+   "url": "https://youtube.com/watch?v=demo_local_llm",
+   "host": "youtube.com",
+   "title": "Running local LLMs on a phone in 2026",
+   "description": "Walkthrough of quantized on-device inference, memory limits and battery impact measurements.",
+   "category": "video",
+   "topics": [
+    "llm_agents"
+   ],
+   "org": null,
+   "standards": []
+  },
+  {
+   "id": 69,
+   "url": "https://youtube.com/watch?v=demo_esp32_audio",
+   "host": "youtube.com",
+   "title": "ESP32 audio projects: from I2S microphone to wake word",
+   "description": "Build log covering microphone wiring, audio buffering and running a small wake-word model.",
+   "category": "video",
+   "topics": [
+    "embedded_iot",
+    "audio_music"
+   ],
+   "org": null,
+   "standards": [
+    "i2s"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "source": 6,
+   "target": 7,
+   "type": "supersedes",
+   "weight": 1.0,
+   "evidence": "documented successor"
+  },
+  {
+   "source": 6,
+   "target": 8,
+   "type": "supersedes",
+   "weight": 1.0,
+   "evidence": "documented successor"
+  },
+  {
+   "source": 1,
+   "target": 0,
+   "type": "supersedes",
+   "weight": 1.0,
+   "evidence": "documented successor"
+  },
+  {
+   "source": 4,
+   "target": 13,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: gguf"
+  },
+  {
+   "source": 4,
+   "target": 14,
+   "type": "discusses_same_standard",
+   "weight": 0.85,
+   "evidence": "shared: gguf, quantization"
+  },
+  {
+   "source": 4,
+   "target": 19,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: quantization"
+  },
+  {
+   "source": 6,
+   "target": 10,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: mcp"
+  },
+  {
+   "source": 6,
+   "target": 59,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: mcp"
+  },
+  {
+   "source": 9,
+   "target": 10,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: model context protocol"
+  },
+  {
+   "source": 9,
+   "target": 59,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: model context protocol"
+  },
+  {
+   "source": 10,
+   "target": 59,
+   "type": "discusses_same_standard",
+   "weight": 0.85,
+   "evidence": "shared: mcp, model context protocol"
+  },
+  {
+   "source": 13,
+   "target": 14,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: gguf"
+  },
+  {
+   "source": 14,
+   "target": 19,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: quantization"
+  },
+  {
+   "source": 18,
+   "target": 19,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 18,
+   "target": 20,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 18,
+   "target": 21,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 18,
+   "target": 22,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 18,
+   "target": 23,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 18,
+   "target": 26,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 18,
+   "target": 28,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 18,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 19,
+   "target": 20,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 19,
+   "target": 21,
+   "type": "discusses_same_standard",
+   "weight": 0.85,
+   "evidence": "shared: embedding, matryoshka"
+  },
+  {
+   "source": 19,
+   "target": 22,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 19,
+   "target": 23,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 19,
+   "target": 26,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 19,
+   "target": 28,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 19,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 20,
+   "target": 21,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 20,
+   "target": 22,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 20,
+   "target": 23,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 20,
+   "target": 26,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 20,
+   "target": 28,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 20,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 21,
+   "target": 22,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 21,
+   "target": 23,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 21,
+   "target": 26,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 21,
+   "target": 28,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 21,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 22,
+   "target": 23,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 22,
+   "target": 26,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 22,
+   "target": 28,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 22,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 23,
+   "target": 26,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 23,
+   "target": 28,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 23,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 24,
+   "target": 60,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: rag"
+  },
+  {
+   "source": 24,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: rag"
+  },
+  {
+   "source": 26,
+   "target": 28,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 26,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 28,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: embedding"
+  },
+  {
+   "source": 60,
+   "target": 66,
+   "type": "discusses_same_standard",
+   "weight": 0.65,
+   "evidence": "shared: rag"
+  },
+  {
+   "source": 0,
+   "target": 1,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both nvidia"
+  },
+  {
+   "source": 3,
+   "target": 6,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both microsoft"
+  },
+  {
+   "source": 3,
+   "target": 7,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both microsoft"
+  },
+  {
+   "source": 3,
+   "target": 8,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both microsoft"
+  },
+  {
+   "source": 4,
+   "target": 14,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both ggml-org"
+  },
+  {
+   "source": 6,
+   "target": 7,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both microsoft"
+  },
+  {
+   "source": 6,
+   "target": 8,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both microsoft"
+  },
+  {
+   "source": 7,
+   "target": 8,
+   "type": "same_organization",
+   "weight": 0.2,
+   "evidence": "both microsoft"
+  },
+  {
+   "source": 0,
+   "target": 1,
+   "type": "similar_to",
+   "weight": 0.3585,
+   "evidence": "cosine 0.36"
+  },
+  {
+   "source": 0,
+   "target": 2,
+   "type": "similar_to",
+   "weight": 0.1481,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 0,
+   "target": 5,
+   "type": "similar_to",
+   "weight": 0.1253,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 0,
+   "target": 14,
+   "type": "similar_to",
+   "weight": 0.0911,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 1,
+   "target": 2,
+   "type": "similar_to",
+   "weight": 0.2909,
+   "evidence": "cosine 0.29"
+  },
+  {
+   "source": 1,
+   "target": 5,
+   "type": "similar_to",
+   "weight": 0.1804,
+   "evidence": "cosine 0.18"
+  },
+  {
+   "source": 1,
+   "target": 18,
+   "type": "similar_to",
+   "weight": 0.1699,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 2,
+   "target": 5,
+   "type": "similar_to",
+   "weight": 0.5445,
+   "evidence": "cosine 0.54"
+  },
+  {
+   "source": 2,
+   "target": 13,
+   "type": "similar_to",
+   "weight": 0.1443,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 3,
+   "target": 69,
+   "type": "similar_to",
+   "weight": 0.266,
+   "evidence": "cosine 0.27"
+  },
+  {
+   "source": 3,
+   "target": 64,
+   "type": "similar_to",
+   "weight": 0.2023,
+   "evidence": "cosine 0.20"
+  },
+  {
+   "source": 3,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.1598,
+   "evidence": "cosine 0.16"
+  },
+  {
+   "source": 3,
+   "target": 6,
+   "type": "similar_to",
+   "weight": 0.1197,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 4,
+   "target": 14,
+   "type": "similar_to",
+   "weight": 0.3738,
+   "evidence": "cosine 0.37"
+  },
+  {
+   "source": 4,
+   "target": 16,
+   "type": "similar_to",
+   "weight": 0.1674,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 4,
+   "target": 17,
+   "type": "similar_to",
+   "weight": 0.1354,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 4,
+   "target": 2,
+   "type": "similar_to",
+   "weight": 0.1272,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 5,
+   "target": 4,
+   "type": "similar_to",
+   "weight": 0.1077,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 6,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.541,
+   "evidence": "cosine 0.54"
+  },
+  {
+   "source": 6,
+   "target": 12,
+   "type": "similar_to",
+   "weight": 0.3003,
+   "evidence": "cosine 0.30"
+  },
+  {
+   "source": 6,
+   "target": 11,
+   "type": "similar_to",
+   "weight": 0.2473,
+   "evidence": "cosine 0.25"
+  },
+  {
+   "source": 6,
+   "target": 28,
+   "type": "similar_to",
+   "weight": 0.1771,
+   "evidence": "cosine 0.18"
+  },
+  {
+   "source": 7,
+   "target": 11,
+   "type": "similar_to",
+   "weight": 0.3304,
+   "evidence": "cosine 0.33"
+  },
+  {
+   "source": 7,
+   "target": 12,
+   "type": "similar_to",
+   "weight": 0.2398,
+   "evidence": "cosine 0.24"
+  },
+  {
+   "source": 7,
+   "target": 52,
+   "type": "similar_to",
+   "weight": 0.1758,
+   "evidence": "cosine 0.18"
+  },
+  {
+   "source": 8,
+   "target": 13,
+   "type": "similar_to",
+   "weight": 0.1764,
+   "evidence": "cosine 0.18"
+  },
+  {
+   "source": 8,
+   "target": 2,
+   "type": "similar_to",
+   "weight": 0.1071,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 8,
+   "target": 28,
+   "type": "similar_to",
+   "weight": 0.0994,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 8,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.0987,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 9,
+   "target": 10,
+   "type": "similar_to",
+   "weight": 0.2974,
+   "evidence": "cosine 0.30"
+  },
+  {
+   "source": 9,
+   "target": 59,
+   "type": "similar_to",
+   "weight": 0.2411,
+   "evidence": "cosine 0.24"
+  },
+  {
+   "source": 9,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.0998,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 9,
+   "target": 55,
+   "type": "similar_to",
+   "weight": 0.083,
+   "evidence": "cosine 0.08"
+  },
+  {
+   "source": 10,
+   "target": 59,
+   "type": "similar_to",
+   "weight": 0.2431,
+   "evidence": "cosine 0.24"
+  },
+  {
+   "source": 10,
+   "target": 6,
+   "type": "similar_to",
+   "weight": 0.1097,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 10,
+   "target": 32,
+   "type": "similar_to",
+   "weight": 0.108,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 11,
+   "target": 29,
+   "type": "similar_to",
+   "weight": 0.148,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 11,
+   "target": 12,
+   "type": "similar_to",
+   "weight": 0.145,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 12,
+   "target": 57,
+   "type": "similar_to",
+   "weight": 0.2073,
+   "evidence": "cosine 0.21"
+  },
+  {
+   "source": 13,
+   "target": 22,
+   "type": "similar_to",
+   "weight": 0.1504,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 13,
+   "target": 14,
+   "type": "similar_to",
+   "weight": 0.127,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 14,
+   "target": 17,
+   "type": "similar_to",
+   "weight": 0.2443,
+   "evidence": "cosine 0.24"
+  },
+  {
+   "source": 14,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.14,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 14,
+   "target": 68,
+   "type": "similar_to",
+   "weight": 0.1328,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 15,
+   "target": 27,
+   "type": "similar_to",
+   "weight": 0.1393,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 15,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.1139,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 15,
+   "target": 54,
+   "type": "similar_to",
+   "weight": 0.1035,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 15,
+   "target": 68,
+   "type": "similar_to",
+   "weight": 0.0947,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 16,
+   "target": 41,
+   "type": "similar_to",
+   "weight": 0.1911,
+   "evidence": "cosine 0.19"
+  },
+  {
+   "source": 16,
+   "target": 19,
+   "type": "similar_to",
+   "weight": 0.1439,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 16,
+   "target": 17,
+   "type": "similar_to",
+   "weight": 0.1104,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 17,
+   "target": 54,
+   "type": "similar_to",
+   "weight": 0.1525,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 17,
+   "target": 52,
+   "type": "similar_to",
+   "weight": 0.1122,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 18,
+   "target": 20,
+   "type": "similar_to",
+   "weight": 0.3198,
+   "evidence": "cosine 0.32"
+  },
+  {
+   "source": 18,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.2477,
+   "evidence": "cosine 0.25"
+  },
+  {
+   "source": 18,
+   "target": 21,
+   "type": "similar_to",
+   "weight": 0.2444,
+   "evidence": "cosine 0.24"
+  },
+  {
+   "source": 18,
+   "target": 19,
+   "type": "similar_to",
+   "weight": 0.2286,
+   "evidence": "cosine 0.23"
+  },
+  {
+   "source": 19,
+   "target": 23,
+   "type": "similar_to",
+   "weight": 0.2981,
+   "evidence": "cosine 0.30"
+  },
+  {
+   "source": 19,
+   "target": 20,
+   "type": "similar_to",
+   "weight": 0.2272,
+   "evidence": "cosine 0.23"
+  },
+  {
+   "source": 19,
+   "target": 21,
+   "type": "similar_to",
+   "weight": 0.1853,
+   "evidence": "cosine 0.19"
+  },
+  {
+   "source": 20,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.3171,
+   "evidence": "cosine 0.32"
+  },
+  {
+   "source": 20,
+   "target": 21,
+   "type": "similar_to",
+   "weight": 0.2347,
+   "evidence": "cosine 0.23"
+  },
+  {
+   "source": 21,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.2165,
+   "evidence": "cosine 0.22"
+  },
+  {
+   "source": 22,
+   "target": 28,
+   "type": "similar_to",
+   "weight": 0.2622,
+   "evidence": "cosine 0.26"
+  },
+  {
+   "source": 22,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.2034,
+   "evidence": "cosine 0.20"
+  },
+  {
+   "source": 22,
+   "target": 20,
+   "type": "similar_to",
+   "weight": 0.1086,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 23,
+   "target": 20,
+   "type": "similar_to",
+   "weight": 0.1908,
+   "evidence": "cosine 0.19"
+  },
+  {
+   "source": 23,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.1759,
+   "evidence": "cosine 0.18"
+  },
+  {
+   "source": 23,
+   "target": 18,
+   "type": "similar_to",
+   "weight": 0.1546,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 24,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.1499,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 24,
+   "target": 20,
+   "type": "similar_to",
+   "weight": 0.101,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 24,
+   "target": 23,
+   "type": "similar_to",
+   "weight": 0.0948,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 24,
+   "target": 21,
+   "type": "similar_to",
+   "weight": 0.0939,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 25,
+   "target": 29,
+   "type": "similar_to",
+   "weight": 0.1248,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 25,
+   "target": 26,
+   "type": "similar_to",
+   "weight": 0.1034,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 26,
+   "target": 33,
+   "type": "similar_to",
+   "weight": 0.123,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 26,
+   "target": 32,
+   "type": "similar_to",
+   "weight": 0.1057,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 26,
+   "target": 31,
+   "type": "similar_to",
+   "weight": 0.0964,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 27,
+   "target": 28,
+   "type": "similar_to",
+   "weight": 0.3083,
+   "evidence": "cosine 0.31"
+  },
+  {
+   "source": 27,
+   "target": 11,
+   "type": "similar_to",
+   "weight": 0.123,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 27,
+   "target": 13,
+   "type": "similar_to",
+   "weight": 0.1141,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 28,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.1657,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 29,
+   "target": 32,
+   "type": "similar_to",
+   "weight": 0.1417,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 31,
+   "target": 32,
+   "type": "similar_to",
+   "weight": 0.1854,
+   "evidence": "cosine 0.19"
+  },
+  {
+   "source": 31,
+   "target": 33,
+   "type": "similar_to",
+   "weight": 0.1616,
+   "evidence": "cosine 0.16"
+  },
+  {
+   "source": 31,
+   "target": 55,
+   "type": "similar_to",
+   "weight": 0.1174,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 31,
+   "target": 27,
+   "type": "similar_to",
+   "weight": 0.1071,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 32,
+   "target": 33,
+   "type": "similar_to",
+   "weight": 0.1507,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 33,
+   "target": 55,
+   "type": "similar_to",
+   "weight": 0.1414,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 34,
+   "target": 36,
+   "type": "similar_to",
+   "weight": 0.0976,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 34,
+   "target": 13,
+   "type": "similar_to",
+   "weight": 0.0895,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 34,
+   "target": 38,
+   "type": "similar_to",
+   "weight": 0.0891,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 34,
+   "target": 37,
+   "type": "similar_to",
+   "weight": 0.0885,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 35,
+   "target": 37,
+   "type": "similar_to",
+   "weight": 0.1814,
+   "evidence": "cosine 0.18"
+  },
+  {
+   "source": 35,
+   "target": 36,
+   "type": "similar_to",
+   "weight": 0.0815,
+   "evidence": "cosine 0.08"
+  },
+  {
+   "source": 35,
+   "target": 16,
+   "type": "similar_to",
+   "weight": 0.0804,
+   "evidence": "cosine 0.08"
+  },
+  {
+   "source": 36,
+   "target": 52,
+   "type": "similar_to",
+   "weight": 0.2115,
+   "evidence": "cosine 0.21"
+  },
+  {
+   "source": 36,
+   "target": 16,
+   "type": "similar_to",
+   "weight": 0.095,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 38,
+   "target": 13,
+   "type": "similar_to",
+   "weight": 0.1186,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 38,
+   "target": 40,
+   "type": "similar_to",
+   "weight": 0.0963,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 38,
+   "target": 27,
+   "type": "similar_to",
+   "weight": 0.0866,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 39,
+   "target": 40,
+   "type": "similar_to",
+   "weight": 0.116,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 40,
+   "target": 54,
+   "type": "similar_to",
+   "weight": 0.1675,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 40,
+   "target": 27,
+   "type": "similar_to",
+   "weight": 0.1021,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 41,
+   "target": 62,
+   "type": "similar_to",
+   "weight": 0.1425,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 41,
+   "target": 42,
+   "type": "similar_to",
+   "weight": 0.128,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 41,
+   "target": 45,
+   "type": "similar_to",
+   "weight": 0.1118,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 42,
+   "target": 43,
+   "type": "similar_to",
+   "weight": 0.3549,
+   "evidence": "cosine 0.35"
+  },
+  {
+   "source": 42,
+   "target": 62,
+   "type": "similar_to",
+   "weight": 0.1626,
+   "evidence": "cosine 0.16"
+  },
+  {
+   "source": 42,
+   "target": 44,
+   "type": "similar_to",
+   "weight": 0.1477,
+   "evidence": "cosine 0.15"
+  },
+  {
+   "source": 42,
+   "target": 47,
+   "type": "similar_to",
+   "weight": 0.1387,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 43,
+   "target": 53,
+   "type": "similar_to",
+   "weight": 0.1748,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 43,
+   "target": 44,
+   "type": "similar_to",
+   "weight": 0.1297,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 43,
+   "target": 17,
+   "type": "similar_to",
+   "weight": 0.0993,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 44,
+   "target": 51,
+   "type": "similar_to",
+   "weight": 0.1192,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 44,
+   "target": 62,
+   "type": "similar_to",
+   "weight": 0.1094,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 45,
+   "target": 62,
+   "type": "similar_to",
+   "weight": 0.3814,
+   "evidence": "cosine 0.38"
+  },
+  {
+   "source": 45,
+   "target": 69,
+   "type": "similar_to",
+   "weight": 0.2111,
+   "evidence": "cosine 0.21"
+  },
+  {
+   "source": 45,
+   "target": 46,
+   "type": "similar_to",
+   "weight": 0.1707,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 45,
+   "target": 42,
+   "type": "similar_to",
+   "weight": 0.1275,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 46,
+   "target": 62,
+   "type": "similar_to",
+   "weight": 0.2591,
+   "evidence": "cosine 0.26"
+  },
+  {
+   "source": 46,
+   "target": 6,
+   "type": "similar_to",
+   "weight": 0.1351,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 46,
+   "target": 42,
+   "type": "similar_to",
+   "weight": 0.1263,
+   "evidence": "cosine 0.13"
+  },
+  {
+   "source": 47,
+   "target": 62,
+   "type": "similar_to",
+   "weight": 0.2066,
+   "evidence": "cosine 0.21"
+  },
+  {
+   "source": 47,
+   "target": 45,
+   "type": "similar_to",
+   "weight": 0.1211,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 47,
+   "target": 54,
+   "type": "similar_to",
+   "weight": 0.1158,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 48,
+   "target": 49,
+   "type": "similar_to",
+   "weight": 0.0875,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 49,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.145,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 50,
+   "target": 63,
+   "type": "similar_to",
+   "weight": 0.0987,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 50,
+   "target": 62,
+   "type": "similar_to",
+   "weight": 0.0946,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 52,
+   "target": 11,
+   "type": "similar_to",
+   "weight": 0.1434,
+   "evidence": "cosine 0.14"
+  },
+  {
+   "source": 55,
+   "target": 32,
+   "type": "similar_to",
+   "weight": 0.1033,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 55,
+   "target": 26,
+   "type": "similar_to",
+   "weight": 0.0843,
+   "evidence": "cosine 0.08"
+  },
+  {
+   "source": 56,
+   "target": 68,
+   "type": "similar_to",
+   "weight": 0.196,
+   "evidence": "cosine 0.20"
+  },
+  {
+   "source": 56,
+   "target": 59,
+   "type": "similar_to",
+   "weight": 0.1758,
+   "evidence": "cosine 0.18"
+  },
+  {
+   "source": 56,
+   "target": 1,
+   "type": "similar_to",
+   "weight": 0.1182,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 56,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.1094,
+   "evidence": "cosine 0.11"
+  },
+  {
+   "source": 57,
+   "target": 6,
+   "type": "similar_to",
+   "weight": 0.1672,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 57,
+   "target": 7,
+   "type": "similar_to",
+   "weight": 0.1589,
+   "evidence": "cosine 0.16"
+  },
+  {
+   "source": 57,
+   "target": 11,
+   "type": "similar_to",
+   "weight": 0.0896,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 58,
+   "target": 60,
+   "type": "similar_to",
+   "weight": 0.1202,
+   "evidence": "cosine 0.12"
+  },
+  {
+   "source": 59,
+   "target": 66,
+   "type": "similar_to",
+   "weight": 0.1687,
+   "evidence": "cosine 0.17"
+  },
+  {
+   "source": 60,
+   "target": 67,
+   "type": "similar_to",
+   "weight": 0.3742,
+   "evidence": "cosine 0.37"
+  },
+  {
+   "source": 64,
+   "target": 69,
+   "type": "similar_to",
+   "weight": 0.2051,
+   "evidence": "cosine 0.21"
+  },
+  {
+   "source": 64,
+   "target": 43,
+   "type": "similar_to",
+   "weight": 0.0901,
+   "evidence": "cosine 0.09"
+  },
+  {
+   "source": 68,
+   "target": 59,
+   "type": "similar_to",
+   "weight": 0.1608,
+   "evidence": "cosine 0.16"
+  },
+  {
+   "source": 68,
+   "target": 16,
+   "type": "similar_to",
+   "weight": 0.0954,
+   "evidence": "cosine 0.10"
+  },
+  {
+   "source": 69,
+   "target": 59,
+   "type": "similar_to",
+   "weight": 0.1014,
+   "evidence": "cosine 0.10"
+  }
+ ],
+ "idf": {
+  "recognition": 3.6532,
+  "nvidia": 4.1641,
+  "fast": 4.5695,
+  "llm": 1.7969,
+  "model": 2.3723,
+  "tdt": 4.5695,
+  "duration": 4.5695,
+  "english": 4.1641,
+  "automatic": 3.8764,
+  "parakeet": 4.5695,
+  "transducer": 4.5695,
+  "punctuation": 4.5695,
+  "agents": 1.7969,
+  "hardware": 3.4709,
+  "speech": 3.4709,
+  "token": 4.5695,
+  "timestamps": 4.5695,
+  "french": 4.5695,
+  "canary": 4.5695,
+  "translation": 4.1641,
+  "multilingual": 3.1832,
+  "german": 4.5695,
+  "spanish": 4.5695,
+  "covering": 3.4709,
+  "large": 3.6532,
+  "openai": 4.5695,
+  "supervision": 4.1641,
+  "weak": 4.1641,
+  "trained": 4.5695,
+  "whisper": 3.8764,
+  "robust": 4.1641,
+  "scale": 3.6532,
+  "speaker": 4.5695,
+  "conversational": 4.5695,
+  "form": 4.5695,
+  "audio": 3.8764,
+  "multi": 3.1832,
+  "music": 3.8764,
+  "supporting": 4.5695,
+  "vibevoice": 4.5695,
+  "long": 4.5695,
+  "synthesis": 4.5695,
+  "expressive": 4.5695,
+  "text": 3.4709,
+  "microsoft": 3.6532,
+  "devops": 1.9305,
+  "ggml": 4.1641,
+  "plain": 4.5695,
+  "gguf": 3.8764,
+  "quantization": 3.8764,
+  "inference": 3.3168,
+  "dependencies": 4.5695,
+  "coding": 1.9305,
+  "device": 3.3168,
+  "port": 4.5695,
+  "cpp": 4.1641,
+  "runtime": 3.8764,
+  "training": 4.1641,
+  "untagged": 2.7778,
+  "paper": 4.1641,
+  "scaling": 4.5695,
+  "via": 3.8764,
+  "680k": 4.5695,
+  "data": 2.8648,
+  "supervised": 4.5695,
+  "weakly": 4.5695,
+  "hours": 4.5695,
+  "agent": 3.4709,
+  "support": 4.1641,
+  "mcp": 4.1641,
+  "building": 3.4709,
+  "framework": 3.6532,
+  "workflows": 4.1641,
+  "deploying": 4.5695,
+  "orchestrating": 4.5695,
+  "applications": 3.8764,
+  "conversation": 4.5695,
+  "cooperating": 4.5695,
+  "autogen": 4.5695,
+  "planners": 4.5695,
+  "programming": 4.5695,
+  "plugins": 4.5695,
+  "kernel": 4.5695,
+  "models": 3.3168,
+  "semantic": 4.1641,
+  "sdk": 4.5695,
+  "language": 4.1641,
+  "conventional": 4.5695,
+  "languages": 4.1641,
+  "integrates": 4.5695,
+  "context": 3.8764,
+  "servers": 4.5695,
+  "reference": 4.1641,
+  "tools": 3.4709,
+  "implementations": 4.5695,
+  "modelcontextprotocol": 4.5695,
+  "prompts": 4.1641,
+  "protocol": 3.8764,
+  "resources": 4.5695,
+  "sources": 4.1641,
+  "external": 4.5695,
+  "assistants": 4.5695,
+  "standard": 4.5695,
+  "connecting": 4.5695,
+  "documentation": 2.8648,
+  "over": 4.1641,
+  "open": 3.8764,
+  "human": 4.5695,
+  "science": 3.1832,
+  "langgraph": 4.5695,
+  "langchain": 4.5695,
+  "stateful": 4.5695,
+  "library": 3.6532,
+  "loop": 4.5695,
+  "graphs": 4.1641,
+  "checkpoints": 4.5695,
+  "cycles": 4.5695,
+  "autonomous": 4.5695,
+  "tool": 4.1641,
+  "guidance": 4.5695,
+  "patterns": 4.5695,
+  "effective": 4.5695,
+  "versus": 4.5695,
+  "engineering": 4.5695,
+  "design": 4.5695,
+  "evaluation": 3.8764,
+  "included": 4.5695,
+  "locally": 4.1641,
+  "run": 4.1641,
+  "cli": 4.5695,
+  "api": 3.8764,
+  "rest": 4.5695,
+  "simple": 3.8764,
+  "ollama": 4.5695,
+  "gpu": 4.5695,
+  "devices": 3.4709,
+  "llama": 4.5695,
+  "cpu": 4.5695,
+  "mobile": 4.1641,
+  "running": 3.1832,
+  "high": 4.5695,
+  "efficient": 4.1641,
+  "engine": 4.1641,
+  "project": 4.5695,
+  "memory": 4.1641,
+  "using": 4.5695,
+  "pagedattention": 4.5695,
+  "management": 4.1641,
+  "serving": 4.5695,
+  "throughput": 4.5695,
+  "cache": 4.5695,
+  "vllm": 4.5695,
+  "lite": 4.5695,
+  "tensorflow": 4.5695,
+  "formerly": 4.5695,
+  "overview": 4.5695,
+  "google": 4.1641,
+  "machine": 4.1641,
+  "android": 3.4709,
+  "litert": 4.5695,
+  "learning": 3.8764,
+  "server": 4.1641,
+  "edge": 4.1641,
+  "platform": 3.8764,
+  "onnx": 4.5695,
+  "cross": 4.5695,
+  "ibm": 4.5695,
+  "twelve": 4.5695,
+  "278m": 4.5695,
+  "apache": 4.1641,
+  "768": 4.5695,
+  "granite": 4.5695,
+  "dimensions": 3.6532,
+  "embedding": 3.0655,
+  "300m": 4.5695,
+  "embeddinggemma": 4.1641,
+  "matryoshka": 4.1641,
+  "aware": 4.5695,
+  "strong": 4.5695,
+  "output": 4.5695,
+  "qwen": 4.5695,
+  "retrieval": 3.3168,
+  "configurable": 4.5695,
+  "qwen3": 4.1641,
+  "benchmarks": 4.5695,
+  "embed": 4.5695,
+  "snowflake": 4.5695,
+  "representation": 4.5695,
+  "arctic": 4.5695,
+  "model2vec": 4.5695,
+  "forward": 4.5695,
+  "sentence": 4.1641,
+  "distills": 4.5695,
+  "static": 4.5695,
+  "minishlab": 4.5695,
+  "neural": 4.5695,
+  "small": 3.8764,
+  "without": 3.8764,
+  "pass": 4.5695,
+  "transformers": 4.1641,
+  "powerful": 4.5695,
+  "designed": 4.5695,
+  "lightweight": 4.5695,
+  "representations": 4.5695,
+  "report": 4.5695,
+  "compact": 3.8764,
+  "technical": 4.5695,
+  "family": 4.5695,
+  "nlp": 4.5695,
+  "generator": 4.5695,
+  "intensive": 4.5695,
+  "augmented": 4.5695,
+  "tasks": 4.5695,
+  "generation": 4.5695,
+  "knowledge": 3.8764,
+  "rag": 4.1641,
+  "index": 4.1641,
+  "original": 4.5695,
+  "non": 4.5695,
+  "parametric": 4.5695,
+  "combining": 4.1641,
+  "survey": 4.1641,
+  "recommender": 4.5695,
+  "systems": 3.8764,
+  "serendipity": 4.1641,
+  "ranking": 4.5695,
+  "recommendation": 4.1641,
+  "diversity": 4.5695,
+  "novelty": 4.5695,
+  "approaches": 4.5695,
+  "nodes": 4.5695,
+  "structurally": 4.5695,
+  "approach": 4.5695,
+  "random": 4.5695,
+  "deepwalk": 4.5695,
+  "biased": 4.5695,
+  "toward": 4.5695,
+  "biases": 4.5695,
+  "distant": 4.5695,
+  "topically": 4.5695,
+  "near": 4.5695,
+  "walks": 4.5695,
+  "transitions": 4.5695,
+  "graph": 3.4709,
+  "faiss": 4.5695,
+  "similarity": 4.1641,
+  "vectors": 4.5695,
+  "search": 4.1641,
+  "dense": 4.1641,
+  "clustering": 4.1641,
+  "facebookresearch": 4.5695,
+  "embeddings": 4.5695,
+  "computing": 4.1641,
+  "role": 4.5695,
+  "defining": 4.1641,
+  "their": 4.1641,
+  "information": 4.5695,
+  "user": 4.5695,
+  "research": 4.5695,
+  "personal": 4.5695,
+  "centric": 4.5695,
+  "ecosystem": 4.5695,
+  "roadmap": 4.5695,
+  "paired": 4.5695,
+  "property": 4.5695,
+  "replaces": 4.5695,
+  "linking": 4.5695,
+  "predecessor": 4.5695,
+  "replaced": 4.5695,
+  "wikidata": 4.5695,
+  "ontology": 4.5695,
+  "inverse": 4.5695,
+  "entity": 4.5695,
+  "note": 4.5695,
+  "obsidian": 4.1641,
+  "analysis": 4.1641,
+  "link": 4.1641,
+  "plugin": 4.5695,
+  "prediction": 4.5695,
+  "jaccard": 4.5695,
+  "citation": 4.5695,
+  "skepticmystic": 4.5695,
+  "bidirectional": 4.5695,
+  "markdown": 4.5695,
+  "links": 4.5695,
+  "local": 3.4709,
+  "vault": 4.5695,
+  "first": 4.5695,
+  "base": 4.5695,
+  "view": 4.1641,
+  "rendering": 4.5695,
+  "directed": 4.5695,
+  "including": 4.5695,
+  "three": 4.5695,
+  "webxr": 4.5695,
+  "variant": 4.5695,
+  "vasturiano": 4.5695,
+  "webgl": 4.5695,
+  "force": 4.5695,
+  "guaranteed": 4.5695,
+  "execution": 4.5695,
+  "work": 4.5695,
+  "retries": 4.5695,
+  "workmanager": 4.5695,
+  "constraints": 4.5695,
+  "background": 4.5695,
+  "deferrable": 4.5695,
+  "incoming": 4.5695,
+  "send": 4.5695,
+  "receiving": 4.5695,
+  "apps": 4.1641,
+  "share": 4.5695,
+  "handle": 4.5695,
+  "intents": 4.5695,
+  "register": 4.5695,
+  "intent": 4.5695,
+  "target": 4.5695,
+  "other": 4.1641,
+  "filters": 4.5695,
+  "composable": 4.5695,
+  "material": 4.1641,
+  "compose": 4.1641,
+  "hoisting": 4.5695,
+  "jetpack": 4.5695,
+  "declarative": 4.1641,
+  "toolkit": 4.5695,
+  "functions": 4.5695,
+  "state": 4.5695,
+  "obtainium": 4.5695,
+  "github": 4.5695,
+  "imranr98": 4.5695,
+  "updates": 4.5695,
+  "directly": 4.5695,
+  "installs": 4.5695,
+  "releases": 4.1641,
+  "app": 4.1641,
+  "html": 4.5695,
+  "jsoup": 4.5695,
+  "java": 4.5695,
+  "css": 4.5695,
+  "parser": 4.5695,
+  "parsing": 4.1641,
+  "cleaning": 4.5695,
+  "based": 4.5695,
+  "traversing": 4.5695,
+  "selector": 4.5695,
+  "algorithm": 4.5695,
+  "readability": 4.5695,
+  "article": 4.5695,
+  "extraction": 4.1641,
+  "mozilla": 4.5695,
+  "version": 4.5695,
+  "firefox": 4.5695,
+  "reader": 4.5695,
+  "standalone": 4.5695,
+  "removal": 4.5695,
+  "boilerplate": 4.5695,
+  "package": 4.5695,
+  "trafilatura": 4.5695,
+  "web": 4.1641,
+  "python": 4.5695,
+  "metadata": 4.5695,
+  "energy": 4.5695,
+  "vector": 4.5695,
+  "microcontroller": 4.5695,
+  "low": 4.5695,
+  "embedded": 2.8648,
+  "iot": 2.8648,
+  "instructions": 4.5695,
+  "product": 4.5695,
+  "esp32": 3.3168,
+  "bluetooth": 4.5695,
+  "page": 4.5695,
+  "yaml": 4.1641,
+  "configuring": 4.5695,
+  "home": 3.8764,
+  "esphome": 4.5695,
+  "esp8266": 4.5695,
+  "system": 3.8764,
+  "assistant": 4.1641,
+  "integrating": 4.5695,
+  "integrations": 4.5695,
+  "automation": 4.5695,
+  "thousands": 4.5695,
+  "source": 4.1641,
+  "zigbee": 4.5695,
+  "exposes": 4.5695,
+  "mqtt": 4.5695,
+  "vendor": 4.5695,
+  "gateway": 4.5695,
+  "zigbee2mqtt": 4.5695,
+  "bridge": 4.5695,
+  "started": 4.5695,
+  "microphone": 4.1641,
+  "projects": 4.1641,
+  "board": 3.8764,
+  "development": 3.8764,
+  "camera": 4.5695,
+  "xiao": 4.5695,
+  "esp32s3": 4.5695,
+  "getting": 4.5695,
+  "official": 4.5695,
+  "series": 4.5695,
+  "chips": 4.5695,
+  "freertos": 4.5695,
+  "idf": 4.5695,
+  "drivers": 4.5695,
+  "espressif": 4.5695,
+  "peripheral": 4.5695,
+  "esp": 4.5695,
+  "operating": 4.5695,
+  "configuration": 4.1641,
+  "single": 4.5695,
+  "computers": 4.5695,
+  "guide": 4.1641,
+  "setup": 4.5695,
+  "raspberry": 4.5695,
+  "host": 4.5695,
+  "print": 4.1641,
+  "higher": 4.5695,
+  "klipper": 4.5695,
+  "speeds": 4.5695,
+  "firmware": 4.5695,
+  "offloads": 4.5695,
+  "computer": 4.5695,
+  "klipper3d": 4.5695,
+  "printer": 3.8764,
+  "planning": 4.5695,
+  "motion": 4.5695,
+  "profiles": 4.5695,
+  "community": 4.1641,
+  "printables": 4.5695,
+  "downloadable": 4.5695,
+  "repository": 4.5695,
+  "remixes": 4.5695,
+  "slicer": 4.5695,
+  "software": 4.5695,
+  "adaptive": 4.5695,
+  "printing": 4.5695,
+  "layers": 4.5695,
+  "slicing": 4.5695,
+  "supports": 4.5695,
+  "best": 4.5695,
+  "comparison": 3.8764,
+  "wireguard": 4.5695,
+  "firewall": 4.5695,
+  "ports": 4.5695,
+  "opening": 4.5695,
+  "installation": 4.5695,
+  "built": 4.5695,
+  "mesh": 4.5695,
+  "tailscale": 4.5695,
+  "connects": 4.5695,
+  "vpn": 4.5695,
+  "container": 4.5695,
+  "docker": 4.5695,
+  "file": 4.5695,
+  "linux": 4.5695,
+  "virtual": 4.5695,
+  "machines": 4.5695,
+  "virtualization": 4.5695,
+  "proxmox": 4.5695,
+  "environment": 4.5695,
+  "containers": 4.5695,
+  "kvm": 4.5695,
+  "caddy": 4.5695,
+  "format": 4.5695,
+  "certificate": 4.5695,
+  "inside": 4.5695,
+  "traversal": 4.5695,
+  "expressions": 4.5695,
+  "common": 4.5695,
+  "recursive": 4.5695,
+  "sqlite": 4.5695,
+  "basis": 4.5695,
+  "queries": 4.5695,
+  "table": 4.5695,
+  "year": 4.5695,
+  "progress": 4.5695,
+  "things": 4.5695,
+  "2025": 4.5695,
+  "pricing": 4.5695,
+  "llms": 4.1641,
+  "review": 4.5695,
+  "learned": 4.5695,
+  "collapse": 4.5695,
+  "get": 4.5695,
+  "wrong": 4.5695,
+  "gaps": 4.5695,
+  "autonomy": 4.5695,
+  "production": 4.5695,
+  "deployments": 4.5695,
+  "risks": 4.5695,
+  "enterprises": 4.5695,
+  "findings": 4.5695,
+  "latest": 4.5695,
+  "interpretability": 4.5695,
+  "discovery": 4.5695,
+  "critical": 4.5695,
+  "imply": 4.5695,
+  "anthropic": 4.5695,
+  "read": 3.8764,
+  "does": 4.5695,
+  "internals": 4.5695,
+  "doesn": 4.5695,
+  "show": 4.5695,
+  "through": 4.5695,
+  "tutorial": 4.5695,
+  "mcps": 4.5695,
+  "wiring": 4.1641,
+  "down": 4.5695,
+  "services": 4.5695,
+  "pocket": 4.1641,
+  "later": 4.1641,
+  "shutdown": 4.1641,
+  "coverage": 4.5695,
+  "surviving": 4.5695,
+  "shutting": 4.5695,
+  "feature": 4.5695,
+  "timelines": 4.5695,
+  "readers": 4.5695,
+  "died": 4.5695,
+  "feed": 4.5695,
+  "algorithmic": 4.5695,
+  "rss": 4.5695,
+  "antidote": 4.5695,
+  "never": 4.5695,
+  "resurgence": 4.5695,
+  "psram": 4.5695,
+  "flash": 4.5695,
+  "prototyping": 4.5695,
+  "devkitc": 4.5695,
+  "levelling": 4.5695,
+  "bed": 4.5695,
+  "colour": 4.5695,
+  "mini": 4.5695,
+  "bambu": 4.5695,
+  "optional": 4.5695,
+  "lab": 4.5695,
+  "filament": 4.5695,
+  "adam": 4.5695,
+  "way": 4.5695,
+  "ribbon": 4.5695,
+  "active": 4.5695,
+  "nearfield": 4.5695,
+  "monitor": 4.5695,
+  "studio": 4.5695,
+  "t5v": 4.5695,
+  "use": 4.5695,
+  "tweeter": 4.5695,
+  "two": 4.5695,
+  "redirects": 4.5695,
+  "shorteners": 4.5695,
+  "thread": 4.5695,
+  "urls": 4.5695,
+  "news": 4.5695,
+  "tracking": 4.5695,
+  "discussion": 4.1641,
+  "privacy": 4.5695,
+  "unwrapping": 4.5695,
+  "shortened": 4.5695,
+  "hacker": 4.5695,
+  "implications": 4.5695,
+  "localllama": 4.5695,
+  "setups": 4.5695,
+  "offline": 4.5695,
+  "which": 4.5695,
+  "after": 4.5695,
+  "selfhosted": 4.5695,
+  "recommendations": 4.5695,
+  "bookmark": 4.5695,
+  "self": 4.5695,
+  "hosted": 4.5695,
+  "bookmarking": 4.5695,
+  "manager": 4.5695,
+  "walkthrough": 4.5695,
+  "2026": 4.5695,
+  "battery": 4.5695,
+  "limits": 4.5695,
+  "phone": 4.5695,
+  "quantized": 4.5695,
+  "impact": 4.5695,
+  "measurements": 4.5695,
+  "i2s": 4.5695,
+  "log": 4.5695,
+  "buffering": 4.5695,
+  "wake": 4.5695,
+  "build": 4.5695,
+  "word": 4.5695
+ },
+ "doc_vectors": [
+  {
+   "nvidia": 0.2552,
+   "parakeet": 0.28,
+   "tdt": 0.28,
+   "fast": 0.28,
+   "english": 0.2552,
+   "automatic": 0.2376,
+   "speech": 0.2127,
+   "recognition": 0.2239,
+   "model": 0.1454,
+   "token": 0.28,
+   "duration": 0.28,
+   "transducer": 0.28,
+   "punctuation": 0.28,
+   "timestamps": 0.28,
+   "llm": 0.1101,
+   "agents": 0.1101,
+   "hardware": 0.2127
+  },
+  {
+   "nvidia": 0.2892,
+   "canary": 0.3174,
+   "multilingual": 0.2211,
+   "speech": 0.2411,
+   "recognition": 0.2538,
+   "translation": 0.2892,
+   "model": 0.1648,
+   "covering": 0.2411,
+   "english": 0.2892,
+   "german": 0.3174,
+   "french": 0.3174,
+   "spanish": 0.3174,
+   "llm": 0.1248,
+   "agents": 0.1248,
+   "hardware": 0.2411
+  },
+  {
+   "openai": 0.2947,
+   "whisper": 0.25,
+   "large": 0.4712,
+   "robust": 0.2685,
+   "multilingual": 0.2053,
+   "speech": 0.2238,
+   "recognition": 0.2356,
+   "translation": 0.2685,
+   "model": 0.153,
+   "trained": 0.2947,
+   "scale": 0.2356,
+   "weak": 0.2685,
+   "supervision": 0.2685,
+   "llm": 0.1159,
+   "agents": 0.1159
+  },
+  {
+   "microsoft": 0.2103,
+   "vibevoice": 0.263,
+   "long": 0.263,
+   "form": 0.263,
+   "expressive": 0.263,
+   "text": 0.1998,
+   "speech": 0.1998,
+   "model": 0.1365,
+   "supporting": 0.263,
+   "multi": 0.1832,
+   "speaker": 0.263,
+   "conversational": 0.263,
+   "audio": 0.4462,
+   "synthesis": 0.263,
+   "llm": 0.1034,
+   "agents": 0.1034,
+   "music": 0.2231
+  },
+  {
+   "ggml": 0.2734,
+   "whisper": 0.509,
+   "cpp": 0.2734,
+   "plain": 0.3,
+   "port": 0.3,
+   "device": 0.2178,
+   "inference": 0.2178,
+   "gguf": 0.2545,
+   "quantization": 0.2545,
+   "runtime": 0.2545,
+   "dependencies": 0.3,
+   "coding": 0.1268,
+   "devops": 0.1268
+  },
+  {
+   "robust": 0.2274,
+   "speech": 0.379,
+   "recognition": 0.1995,
+   "via": 0.2117,
+   "large": 0.1995,
+   "scale": 0.1995,
+   "weak": 0.2274,
+   "supervision": 0.2274,
+   "whisper": 0.2117,
+   "paper": 0.2274,
+   "scaling": 0.2495,
+   "weakly": 0.2495,
+   "supervised": 0.2495,
+   "training": 0.2274,
+   "680k": 0.2495,
+   "hours": 0.2495,
+   "multilingual": 0.1738,
+   "data": 0.1564,
+   "untagged": 0.1517
+  },
+  {
+   "microsoft": 0.229,
+   "agent": 0.4352,
+   "framework": 0.458,
+   "building": 0.2176,
+   "orchestrating": 0.2864,
+   "deploying": 0.2864,
+   "agents": 0.2253,
+   "multi": 0.1995,
+   "workflows": 0.261,
+   "mcp": 0.261,
+   "support": 0.261,
+   "llm": 0.1126,
+   "coding": 0.121,
+   "devops": 0.121
+  },
+  {
+   "microsoft": 0.2787,
+   "autogen": 0.3486,
+   "multi": 0.2428,
+   "agent": 0.2648,
+   "conversation": 0.3486,
+   "framework": 0.2787,
+   "building": 0.2648,
+   "llm": 0.2741,
+   "applications": 0.2957,
+   "cooperating": 0.3486,
+   "agents": 0.2741,
+   "coding": 0.1473,
+   "devops": 0.1473
+  },
+  {
+   "microsoft": 0.2273,
+   "semantic": 0.2591,
+   "kernel": 0.2843,
+   "sdk": 0.2843,
+   "integrates": 0.2843,
+   "large": 0.2273,
+   "language": 0.2591,
+   "models": 0.2064,
+   "conventional": 0.2843,
+   "programming": 0.2843,
+   "languages": 0.2591,
+   "via": 0.2412,
+   "plugins": 0.2843,
+   "planners": 0.2843,
+   "coding": 0.1201,
+   "devops": 0.1201
+  },
+  {
+   "modelcontextprotocol": 0.2934,
+   "servers": 0.5869,
+   "reference": 0.2674,
+   "implementations": 0.2934,
+   "model": 0.1523,
+   "context": 0.2489,
+   "protocol": 0.2489,
+   "tools": 0.2229,
+   "resources": 0.2934,
+   "prompts": 0.2674,
+   "llm": 0.1154,
+   "agents": 0.1154,
+   "coding": 0.124,
+   "devops": 0.124
+  },
+  {
+   "model": 0.1536,
+   "context": 0.251,
+   "protocol": 0.251,
+   "documentation": 0.1855,
+   "open": 0.251,
+   "standard": 0.2959,
+   "connecting": 0.2959,
+   "assistants": 0.2959,
+   "external": 0.2959,
+   "tools": 0.2247,
+   "data": 0.1855,
+   "sources": 0.2696,
+   "prompts": 0.2696,
+   "over": 0.2696,
+   "mcp": 0.2696,
+   "llm": 0.1164,
+   "agents": 0.1164
+  },
+  {
+   "langchain": 0.2843,
+   "langgraph": 0.2843,
+   "library": 0.2273,
+   "building": 0.2159,
+   "stateful": 0.2843,
+   "multi": 0.198,
+   "agent": 0.2159,
+   "applications": 0.2412,
+   "graphs": 0.2591,
+   "cycles": 0.2843,
+   "checkpoints": 0.2843,
+   "human": 0.2843,
+   "loop": 0.2843,
+   "llm": 0.1118,
+   "agents": 0.1118,
+   "coding": 0.1201,
+   "devops": 0.1201,
+   "data": 0.1782,
+   "science": 0.198
+  },
+  {
+   "building": 0.2185,
+   "effective": 0.2877,
+   "agents": 0.3394,
+   "engineering": 0.2877,
+   "guidance": 0.2877,
+   "agent": 0.2185,
+   "patterns": 0.2877,
+   "workflows": 0.2622,
+   "versus": 0.2877,
+   "autonomous": 0.2877,
+   "tool": 0.2622,
+   "design": 0.2877,
+   "evaluation": 0.2441,
+   "llm": 0.1131
+  },
+  {
+   "ollama": 0.5272,
+   "run": 0.2402,
+   "large": 0.2107,
+   "language": 0.2402,
+   "models": 0.1913,
+   "locally": 0.2402,
+   "simple": 0.2236,
+   "cli": 0.2636,
+   "rest": 0.2636,
+   "api": 0.2236,
+   "gguf": 0.2236,
+   "model": 0.1369,
+   "library": 0.2107,
+   "included": 0.2636,
+   "llm": 0.1037,
+   "agents": 0.1037,
+   "coding": 0.1114,
+   "devops": 0.1114
+  },
+  {
+   "ggml": 0.285,
+   "llama": 0.3127,
+   "cpp": 0.285,
+   "llm": 0.2459,
+   "inference": 0.227,
+   "gguf": 0.2653,
+   "quantization": 0.2653,
+   "running": 0.2178,
+   "cpu": 0.3127,
+   "gpu": 0.3127,
+   "mobile": 0.285,
+   "devices": 0.2375,
+   "agents": 0.123,
+   "coding": 0.1321,
+   "devops": 0.1321,
+   "hardware": 0.2375
+  },
+  {
+   "vllm": 0.5088,
+   "project": 0.2544,
+   "high": 0.2544,
+   "throughput": 0.2544,
+   "llm": 0.2001,
+   "serving": 0.2544,
+   "engine": 0.2318,
+   "using": 0.2544,
+   "pagedattention": 0.2544,
+   "efficient": 0.2318,
+   "cache": 0.2544,
+   "memory": 0.2318,
+   "management": 0.2318,
+   "agents": 0.1,
+   "coding": 0.1075,
+   "devops": 0.1075
+  },
+  {
+   "litert": 0.3147,
+   "overview": 0.3147,
+   "google": 0.2867,
+   "runtime": 0.2669,
+   "device": 0.2284,
+   "machine": 0.2867,
+   "learning": 0.2669,
+   "inference": 0.2284,
+   "android": 0.239,
+   "formerly": 0.3147,
+   "tensorflow": 0.3147,
+   "lite": 0.3147,
+   "untagged": 0.1913
+  },
+  {
+   "onnx": 0.5628,
+   "runtime": 0.2387,
+   "documentation": 0.1764,
+   "cross": 0.2814,
+   "platform": 0.2387,
+   "inference": 0.2043,
+   "engine": 0.2564,
+   "running": 0.196,
+   "models": 0.2043,
+   "mobile": 0.2564,
+   "server": 0.2564,
+   "edge": 0.2564,
+   "hardware": 0.2138,
+   "coding": 0.1189,
+   "devops": 0.1189
+  },
+  {
+   "ibm": 0.2518,
+   "granite": 0.5036,
+   "embedding": 0.3378,
+   "278m": 0.2518,
+   "multilingual": 0.3508,
+   "apache": 0.2294,
+   "text": 0.1913,
+   "model": 0.1307,
+   "768": 0.2518,
+   "dimensions": 0.2013,
+   "covering": 0.1913,
+   "twelve": 0.2518,
+   "languages": 0.2294,
+   "llm": 0.099,
+   "agents": 0.099
+  },
+  {
+   "google": 0.307,
+   "embeddinggemma": 0.307,
+   "300m": 0.3368,
+   "device": 0.2445,
+   "text": 0.2559,
+   "embedding": 0.226,
+   "model": 0.1749,
+   "matryoshka": 0.307,
+   "dimensions": 0.2693,
+   "quantization": 0.2858,
+   "aware": 0.3368,
+   "training": 0.307,
+   "llm": 0.1325,
+   "agents": 0.1325
+  },
+  {
+   "qwen": 0.3185,
+   "qwen3": 0.2902,
+   "embedding": 0.4273,
+   "multilingual": 0.2218,
+   "model": 0.1653,
+   "configurable": 0.3185,
+   "output": 0.3185,
+   "dimensions": 0.2546,
+   "strong": 0.3185,
+   "retrieval": 0.2311,
+   "benchmarks": 0.3185,
+   "llm": 0.1252,
+   "agents": 0.1252
+  },
+  {
+   "snowflake": 0.5918,
+   "arctic": 0.2959,
+   "embed": 0.2959,
+   "apache": 0.2696,
+   "multilingual": 0.2061,
+   "retrieval": 0.2148,
+   "embedding": 0.1985,
+   "model": 0.1536,
+   "matryoshka": 0.2696,
+   "representation": 0.2959,
+   "learning": 0.251,
+   "llm": 0.1164,
+   "agents": 0.1164
+  },
+  {
+   "minishlab": 0.282,
+   "model2vec": 0.282,
+   "distills": 0.282,
+   "sentence": 0.257,
+   "transformers": 0.257,
+   "small": 0.2392,
+   "static": 0.282,
+   "embedding": 0.1892,
+   "models": 0.2047,
+   "run": 0.257,
+   "without": 0.2392,
+   "neural": 0.282,
+   "forward": 0.282,
+   "pass": 0.282,
+   "llm": 0.1109,
+   "agents": 0.1109,
+   "coding": 0.1191,
+   "devops": 0.1191
+  },
+  {
+   "embeddinggemma": 0.2722,
+   "powerful": 0.2987,
+   "lightweight": 0.2987,
+   "text": 0.2269,
+   "representations": 0.2987,
+   "technical": 0.2987,
+   "report": 0.2987,
+   "compact": 0.2534,
+   "embedding": 0.2004,
+   "model": 0.1551,
+   "family": 0.2987,
+   "designed": 0.2987,
+   "device": 0.2168,
+   "retrieval": 0.2168,
+   "llm": 0.1175,
+   "agents": 0.1175
+  },
+  {
+   "retrieval": 0.3379,
+   "augmented": 0.2328,
+   "generation": 0.2328,
+   "knowledge": 0.1975,
+   "intensive": 0.2328,
+   "nlp": 0.2328,
+   "tasks": 0.2328,
+   "original": 0.2328,
+   "rag": 0.2121,
+   "paper": 0.2121,
+   "combining": 0.2121,
+   "parametric": 0.4655,
+   "generator": 0.2328,
+   "non": 0.2328,
+   "index": 0.2121,
+   "llm": 0.0915,
+   "agents": 0.0915
+  },
+  {
+   "novelty": 0.5113,
+   "diversity": 0.5113,
+   "recommender": 0.2557,
+   "systems": 0.2169,
+   "survey": 0.233,
+   "evaluation": 0.2169,
+   "ranking": 0.2557,
+   "approaches": 0.2557,
+   "serendipity": 0.233,
+   "recommendation": 0.233,
+   "untagged": 0.1554
+  },
+  {
+   "serendipity": 0.2218,
+   "biased": 0.2434,
+   "random": 0.2434,
+   "walks": 0.2434,
+   "recommendation": 0.2218,
+   "graph": 0.1849,
+   "embedding": 0.1633,
+   "approach": 0.2434,
+   "biases": 0.2434,
+   "deepwalk": 0.2434,
+   "transitions": 0.2434,
+   "toward": 0.2434,
+   "structurally": 0.2434,
+   "near": 0.2434,
+   "topically": 0.2434,
+   "distant": 0.2434,
+   "nodes": 0.2434,
+   "llm": 0.0957,
+   "agents": 0.0957,
+   "data": 0.1526,
+   "science": 0.1696
+  },
+  {
+   "facebookresearch": 0.3316,
+   "faiss": 0.3316,
+   "library": 0.2651,
+   "efficient": 0.3021,
+   "similarity": 0.3021,
+   "search": 0.3021,
+   "clustering": 0.3021,
+   "dense": 0.3021,
+   "vectors": 0.3316,
+   "scale": 0.2651,
+   "llm": 0.1304,
+   "agents": 0.1304,
+   "coding": 0.1401,
+   "devops": 0.1401
+  },
+  {
+   "sentence": 0.5368,
+   "transformers": 0.2684,
+   "documentation": 0.1846,
+   "framework": 0.2355,
+   "computing": 0.2684,
+   "dense": 0.2684,
+   "embeddings": 0.2945,
+   "semantic": 0.2684,
+   "search": 0.2684,
+   "clustering": 0.2684,
+   "retrieval": 0.2138,
+   "llm": 0.1158,
+   "agents": 0.1158,
+   "coding": 0.1244,
+   "devops": 0.1244
+  },
+  {
+   "ecosystem": 0.2051,
+   "personal": 0.4101,
+   "knowledge": 0.3479,
+   "graphs": 0.3737,
+   "survey": 0.3737,
+   "research": 0.2051,
+   "roadmap": 0.2051,
+   "defining": 0.1869,
+   "their": 0.1869,
+   "role": 0.2051,
+   "user": 0.2051,
+   "centric": 0.2051,
+   "information": 0.2051,
+   "systems": 0.174,
+   "data": 0.1286,
+   "science": 0.1429
+  },
+  {
+   "wikidata": 0.2472,
+   "property": 0.4943,
+   "replaces": 0.2472,
+   "ontology": 0.2472,
+   "linking": 0.2472,
+   "entity": 0.2472,
+   "predecessor": 0.2472,
+   "replaced": 0.4943,
+   "paired": 0.2472,
+   "inverse": 0.2472,
+   "untagged": 0.1502
+  },
+  {
+   "skepticmystic": 0.272,
+   "graph": 0.2066,
+   "analysis": 0.2479,
+   "obsidian": 0.2479,
+   "plugin": 0.272,
+   "computing": 0.2479,
+   "note": 0.272,
+   "similarity": 0.2479,
+   "via": 0.2308,
+   "jaccard": 0.272,
+   "index": 0.2479,
+   "citation": 0.272,
+   "link": 0.2479,
+   "prediction": 0.272,
+   "coding": 0.1149,
+   "devops": 0.1149,
+   "data": 0.1705,
+   "science": 0.1895
+  },
+  {
+   "obsidian": 0.2718,
+   "local": 0.2265,
+   "first": 0.2982,
+   "markdown": 0.2982,
+   "knowledge": 0.253,
+   "base": 0.2982,
+   "bidirectional": 0.2982,
+   "links": 0.2982,
+   "graph": 0.2265,
+   "view": 0.2718,
+   "over": 0.2718,
+   "vault": 0.2982,
+   "data": 0.187,
+   "science": 0.2078
+  },
+  {
+   "vasturiano": 0.2486,
+   "force": 0.4972,
+   "graph": 0.3776,
+   "directed": 0.2486,
+   "rendering": 0.2486,
+   "three": 0.2486,
+   "dimensions": 0.1987,
+   "webgl": 0.2486,
+   "including": 0.2486,
+   "webxr": 0.2486,
+   "variant": 0.2486,
+   "coding": 0.105,
+   "devops": 0.105,
+   "data": 0.1558,
+   "science": 0.1732
+  },
+  {
+   "workmanager": 0.3155,
+   "documentation": 0.1978,
+   "android": 0.2396,
+   "api": 0.2676,
+   "deferrable": 0.3155,
+   "background": 0.3155,
+   "work": 0.3155,
+   "constraints": 0.3155,
+   "retries": 0.3155,
+   "guaranteed": 0.3155,
+   "execution": 0.3155,
+   "coding": 0.1333,
+   "devops": 0.1333
+  },
+  {
+   "receiving": 0.27,
+   "simple": 0.229,
+   "data": 0.1693,
+   "other": 0.246,
+   "apps": 0.246,
+   "register": 0.27,
+   "android": 0.2051,
+   "share": 0.27,
+   "target": 0.27,
+   "intent": 0.27,
+   "filters": 0.27,
+   "handle": 0.27,
+   "incoming": 0.27,
+   "send": 0.27,
+   "intents": 0.27,
+   "untagged": 0.1641
+  },
+  {
+   "jetpack": 0.3189,
+   "compose": 0.2906,
+   "documentation": 0.2,
+   "declarative": 0.2906,
+   "toolkit": 0.3189,
+   "android": 0.2423,
+   "composable": 0.3189,
+   "functions": 0.3189,
+   "state": 0.3189,
+   "hoisting": 0.3189,
+   "material": 0.2906,
+   "untagged": 0.1939
+  },
+  {
+   "imranr98": 0.3003,
+   "obtainium": 0.3003,
+   "android": 0.2281,
+   "app": 0.2737,
+   "installs": 0.3003,
+   "updates": 0.3003,
+   "apps": 0.2737,
+   "directly": 0.3003,
+   "github": 0.3003,
+   "releases": 0.2737,
+   "other": 0.2737,
+   "sources": 0.2737,
+   "coding": 0.1269,
+   "devops": 0.1269
+  },
+  {
+   "jsoup": 0.2622,
+   "java": 0.2622,
+   "html": 0.5244,
+   "parser": 0.2622,
+   "library": 0.2096,
+   "parsing": 0.2389,
+   "traversing": 0.2622,
+   "cleaning": 0.2622,
+   "css": 0.2622,
+   "selector": 0.2622,
+   "based": 0.2622,
+   "api": 0.2224,
+   "coding": 0.1108,
+   "devops": 0.1108
+  },
+  {
+   "mozilla": 0.3159,
+   "readability": 0.3159,
+   "standalone": 0.3159,
+   "version": 0.3159,
+   "firefox": 0.3159,
+   "reader": 0.3159,
+   "view": 0.2879,
+   "article": 0.3159,
+   "extraction": 0.2879,
+   "algorithm": 0.3159,
+   "coding": 0.1335,
+   "devops": 0.1335
+  },
+  {
+   "trafilatura": 0.3092,
+   "documentation": 0.1939,
+   "python": 0.3092,
+   "package": 0.3092,
+   "web": 0.2818,
+   "text": 0.2349,
+   "extraction": 0.2818,
+   "metadata": 0.3092,
+   "parsing": 0.2818,
+   "boilerplate": 0.3092,
+   "removal": 0.3092,
+   "scale": 0.2472,
+   "coding": 0.1306,
+   "devops": 0.1306
+  },
+  {
+   "esp32": 0.2122,
+   "product": 0.2924,
+   "page": 0.2924,
+   "microcontroller": 0.2924,
+   "bluetooth": 0.2924,
+   "low": 0.2924,
+   "energy": 0.2924,
+   "vector": 0.2924,
+   "instructions": 0.2924,
+   "device": 0.2122,
+   "machine": 0.2664,
+   "learning": 0.248,
+   "llm": 0.115,
+   "agents": 0.115,
+   "embedded": 0.1833,
+   "iot": 0.1833
+  },
+  {
+   "esphome": 0.3335,
+   "system": 0.2829,
+   "configuring": 0.3335,
+   "esp32": 0.2421,
+   "esp8266": 0.3335,
+   "devices": 0.2533,
+   "yaml": 0.3039,
+   "integrating": 0.3335,
+   "home": 0.2829,
+   "assistant": 0.3039,
+   "embedded": 0.2091,
+   "iot": 0.2091
+  },
+  {
+   "home": 0.4969,
+   "assistant": 0.2669,
+   "open": 0.2485,
+   "source": 0.2669,
+   "automation": 0.2929,
+   "platform": 0.2485,
+   "running": 0.204,
+   "locally": 0.2669,
+   "integrations": 0.2929,
+   "thousands": 0.2929,
+   "devices": 0.2225,
+   "embedded": 0.1836,
+   "iot": 0.1836
+  },
+  {
+   "zigbee2mqtt": 0.3249,
+   "documentation": 0.2037,
+   "bridge": 0.3249,
+   "exposes": 0.3249,
+   "zigbee": 0.3249,
+   "devices": 0.2468,
+   "mqtt": 0.3249,
+   "without": 0.2756,
+   "vendor": 0.3249,
+   "gateway": 0.3249,
+   "embedded": 0.2037,
+   "iot": 0.2037
+  },
+  {
+   "xiao": 0.2912,
+   "esp32s3": 0.2912,
+   "getting": 0.2912,
+   "started": 0.2912,
+   "compact": 0.247,
+   "esp32": 0.2114,
+   "development": 0.247,
+   "board": 0.247,
+   "camera": 0.2912,
+   "microphone": 0.2654,
+   "support": 0.2654,
+   "edge": 0.2654,
+   "projects": 0.2654,
+   "embedded": 0.1826,
+   "iot": 0.1826
+  },
+  {
+   "espressif": 0.2883,
+   "esp": 0.2883,
+   "idf": 0.2883,
+   "official": 0.2883,
+   "development": 0.2446,
+   "framework": 0.2305,
+   "esp32": 0.2093,
+   "series": 0.2883,
+   "chips": 0.2883,
+   "freertos": 0.2883,
+   "peripheral": 0.2883,
+   "drivers": 0.2883,
+   "coding": 0.1218,
+   "devops": 0.1218,
+   "embedded": 0.1808,
+   "iot": 0.1808
+  },
+  {
+   "raspberry": 0.5524,
+   "documentation": 0.1732,
+   "setup": 0.2762,
+   "configuration": 0.2517,
+   "guide": 0.2517,
+   "single": 0.2762,
+   "board": 0.2343,
+   "computers": 0.2762,
+   "their": 0.2517,
+   "operating": 0.2762,
+   "system": 0.2343,
+   "embedded": 0.1732,
+   "iot": 0.1732
+  },
+  {
+   "klipper3d": 0.2898,
+   "klipper": 0.2898,
+   "printer": 0.2458,
+   "firmware": 0.2898,
+   "offloads": 0.2898,
+   "motion": 0.2898,
+   "planning": 0.2898,
+   "host": 0.2898,
+   "computer": 0.2898,
+   "higher": 0.2898,
+   "print": 0.2641,
+   "speeds": 0.2898,
+   "coding": 0.1224,
+   "devops": 0.1224
+  },
+  {
+   "printables": 0.3638,
+   "repository": 0.3638,
+   "downloadable": 0.3638,
+   "models": 0.264,
+   "print": 0.3315,
+   "profiles": 0.3638,
+   "community": 0.3315,
+   "remixes": 0.3638,
+   "untagged": 0.2211
+  },
+  {
+   "best": 0.2807,
+   "printer": 0.2381,
+   "slicer": 0.2807,
+   "software": 0.2807,
+   "comparison": 0.2381,
+   "slicing": 0.2807,
+   "tools": 0.2132,
+   "covering": 0.2132,
+   "supports": 0.2807,
+   "adaptive": 0.2807,
+   "layers": 0.2807,
+   "multi": 0.1955,
+   "material": 0.2558,
+   "printing": 0.2807,
+   "embedded": 0.176,
+   "iot": 0.176
+  },
+  {
+   "tailscale": 0.2829,
+   "installation": 0.2829,
+   "guide": 0.2578,
+   "mesh": 0.2829,
+   "vpn": 0.2829,
+   "built": 0.2829,
+   "wireguard": 0.2829,
+   "connects": 0.2829,
+   "devices": 0.2149,
+   "without": 0.24,
+   "opening": 0.2829,
+   "firewall": 0.2829,
+   "ports": 0.2829,
+   "untagged": 0.172
+  },
+  {
+   "docker": 0.3229,
+   "compose": 0.2942,
+   "documentation": 0.2024,
+   "tool": 0.2942,
+   "defining": 0.2942,
+   "running": 0.2249,
+   "multi": 0.2249,
+   "container": 0.3229,
+   "applications": 0.2739,
+   "declarative": 0.2942,
+   "yaml": 0.2942,
+   "file": 0.3229,
+   "coding": 0.1364,
+   "devops": 0.1364
+  },
+  {
+   "proxmox": 0.263,
+   "virtual": 0.526,
+   "environment": 0.263,
+   "open": 0.2231,
+   "source": 0.2397,
+   "virtualization": 0.263,
+   "platform": 0.2231,
+   "combining": 0.2397,
+   "kvm": 0.263,
+   "machines": 0.263,
+   "linux": 0.263,
+   "containers": 0.263,
+   "coding": 0.1111,
+   "devops": 0.1111
+  },
+  {
+   "caddy": 0.3428,
+   "documentation": 0.2149,
+   "web": 0.3124,
+   "server": 0.3124,
+   "automatic": 0.2908,
+   "certificate": 0.3428,
+   "management": 0.3124,
+   "simple": 0.2908,
+   "configuration": 0.3124,
+   "format": 0.3428,
+   "coding": 0.1448,
+   "devops": 0.1448
+  },
+  {
+   "sqlite": 0.4762,
+   "recursive": 0.4762,
+   "common": 0.2381,
+   "table": 0.2381,
+   "expressions": 0.2381,
+   "reference": 0.217,
+   "queries": 0.2381,
+   "basis": 0.2381,
+   "graph": 0.1808,
+   "traversal": 0.2381,
+   "inside": 0.2381,
+   "coding": 0.1006,
+   "devops": 0.1006,
+   "data": 0.1493,
+   "science": 0.1658
+  },
+  {
+   "things": 0.2842,
+   "learned": 0.2842,
+   "llms": 0.2589,
+   "2025": 0.2842,
+   "year": 0.2842,
+   "review": 0.2842,
+   "covering": 0.2158,
+   "model": 0.1475,
+   "releases": 0.2589,
+   "pricing": 0.2842,
+   "collapse": 0.2842,
+   "agents": 0.2235,
+   "local": 0.2158,
+   "inference": 0.2063,
+   "progress": 0.2842,
+   "llm": 0.1117
+  },
+  {
+   "enterprises": 0.3029,
+   "get": 0.3029,
+   "wrong": 0.3029,
+   "agents": 0.2382,
+   "analysis": 0.276,
+   "evaluation": 0.2569,
+   "gaps": 0.3029,
+   "autonomy": 0.3029,
+   "risks": 0.3029,
+   "production": 0.3029,
+   "agent": 0.2301,
+   "deployments": 0.3029,
+   "llm": 0.1191
+  },
+  {
+   "anthropic": 0.2852,
+   "latest": 0.2852,
+   "discovery": 0.2852,
+   "does": 0.2852,
+   "doesn": 0.2852,
+   "show": 0.2852,
+   "critical": 0.2852,
+   "read": 0.2419,
+   "interpretability": 0.2852,
+   "findings": 0.2852,
+   "imply": 0.2852,
+   "model": 0.148,
+   "internals": 0.2852,
+   "llm": 0.1121,
+   "agents": 0.1121
+  },
+  {
+   "building": 0.2179,
+   "local": 0.4358,
+   "systems": 0.2433,
+   "qwen3": 0.2614,
+   "mcps": 0.2868,
+   "tutorial": 0.2868,
+   "running": 0.1998,
+   "model": 0.2978,
+   "wiring": 0.2614,
+   "tools": 0.2179,
+   "through": 0.2868,
+   "context": 0.2433,
+   "protocol": 0.2433,
+   "llm": 0.1128,
+   "agents": 0.1128
+  },
+  {
+   "read": 0.409,
+   "later": 0.4393,
+   "app": 0.2197,
+   "pocket": 0.4393,
+   "shutting": 0.241,
+   "down": 0.241,
+   "coverage": 0.241,
+   "shutdown": 0.2197,
+   "comparison": 0.2045,
+   "surviving": 0.241,
+   "services": 0.241,
+   "llm": 0.0948,
+   "agents": 0.0948
+  },
+  {
+   "rss": 0.3105,
+   "never": 0.3105,
+   "died": 0.3105,
+   "feature": 0.3105,
+   "resurgence": 0.3105,
+   "feed": 0.3105,
+   "readers": 0.3105,
+   "antidote": 0.3105,
+   "algorithmic": 0.3105,
+   "timelines": 0.3105,
+   "untagged": 0.1888
+  },
+  {
+   "esp32": 0.2074,
+   "devkitc": 0.2857,
+   "development": 0.4848,
+   "board": 0.4848,
+   "flash": 0.2857,
+   "psram": 0.2857,
+   "embedded": 0.3583,
+   "prototyping": 0.2857,
+   "iot": 0.1791
+  },
+  {
+   "bambu": 0.2919,
+   "lab": 0.2919,
+   "mini": 0.2919,
+   "compact": 0.2477,
+   "printer": 0.2477,
+   "automatic": 0.2477,
+   "bed": 0.2919,
+   "levelling": 0.2919,
+   "optional": 0.2919,
+   "multi": 0.2034,
+   "colour": 0.2919,
+   "filament": 0.2919,
+   "system": 0.2477,
+   "untagged": 0.1775
+  },
+  {
+   "adam": 0.2137,
+   "audio": 0.3626,
+   "t5v": 0.2137,
+   "studio": 0.4274,
+   "monitor": 0.4274,
+   "two": 0.2137,
+   "way": 0.2137,
+   "active": 0.2137,
+   "nearfield": 0.2137,
+   "ribbon": 0.2137,
+   "tweeter": 0.2137,
+   "home": 0.1813,
+   "use": 0.2137,
+   "music": 0.1813,
+   "hardware": 0.1623
+  },
+  {
+   "hacker": 0.277,
+   "news": 0.277,
+   "discussion": 0.2524,
+   "link": 0.2524,
+   "shorteners": 0.277,
+   "thread": 0.277,
+   "tracking": 0.277,
+   "redirects": 0.277,
+   "privacy": 0.277,
+   "implications": 0.277,
+   "unwrapping": 0.277,
+   "shortened": 0.277,
+   "urls": 0.277,
+   "untagged": 0.1684
+  },
+  {
+   "localllama": 0.2937,
+   "which": 0.2937,
+   "embedding": 0.394,
+   "model": 0.1525,
+   "local": 0.2231,
+   "rag": 0.2676,
+   "community": 0.2676,
+   "comparison": 0.2491,
+   "small": 0.2491,
+   "multilingual": 0.2046,
+   "models": 0.2132,
+   "offline": 0.2937,
+   "retrieval": 0.2132,
+   "setups": 0.2937,
+   "llm": 0.1155,
+   "agents": 0.1155
+  },
+  {
+   "selfhosted": 0.2776,
+   "bookmark": 0.2776,
+   "manager": 0.2776,
+   "recommendations": 0.2776,
+   "discussion": 0.253,
+   "self": 0.2776,
+   "hosted": 0.2776,
+   "read": 0.2355,
+   "later": 0.253,
+   "bookmarking": 0.2776,
+   "tools": 0.2109,
+   "after": 0.2776,
+   "pocket": 0.253,
+   "shutdown": 0.253,
+   "coding": 0.1173,
+   "devops": 0.1173
+  },
+  {
+   "running": 0.2004,
+   "local": 0.2185,
+   "llms": 0.2621,
+   "phone": 0.2876,
+   "2026": 0.2876,
+   "walkthrough": 0.2876,
+   "quantized": 0.2876,
+   "device": 0.2088,
+   "inference": 0.2088,
+   "memory": 0.2621,
+   "limits": 0.2876,
+   "battery": 0.2876,
+   "impact": 0.2876,
+   "measurements": 0.2876,
+   "llm": 0.1131,
+   "agents": 0.1131
+  },
+  {
+   "esp32": 0.1383,
+   "audio": 0.4849,
+   "projects": 0.1736,
+   "i2s": 0.1905,
+   "microphone": 0.3473,
+   "wake": 0.3811,
+   "word": 0.3811,
+   "build": 0.1905,
+   "log": 0.1905,
+   "covering": 0.1447,
+   "wiring": 0.1736,
+   "buffering": 0.1905,
+   "running": 0.1327,
+   "small": 0.1616,
+   "model": 0.0989,
+   "embedded": 0.1195,
+   "iot": 0.1195,
+   "music": 0.1616
+  }
+ ]
+}
