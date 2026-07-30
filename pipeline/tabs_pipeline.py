@@ -22,7 +22,9 @@ from collections import Counter
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode, unquote
 
-from pypdf import PdfReader
+# pypdf is imported lazily inside parse_pdf: normalize/categorize/topics are
+# pure functions that other callers (web/build_demo_data.py, tests) reuse
+# without ever touching a PDF, and should not require the dependency.
 
 ENTRY_SPLIT = re.compile(r"\s(\d+)\.\s+")
 URL_RE = re.compile(r"https?://\S+")
@@ -35,6 +37,8 @@ def parse_pdf(path: Path):
     Handles: hard-wrapped URLs across lines, numbered lists, and trailing
     unnumbered plain URL lists appended after the numbered section.
     """
+    from pypdf import PdfReader
+
     reader = PdfReader(str(path))
     full = "".join((p.extract_text() or "") for p in reader.pages)
     # URL fragments wrap without spaces at line breaks, so joining is safe
