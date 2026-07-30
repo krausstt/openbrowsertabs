@@ -164,7 +164,14 @@ python3 pipeline/tabs_pipeline.py data/ data/dataset.json
 
 # regenerate the public web demo corpus
 python3 web/build_demo_data.py > web/data.json
+
+# serve the demo locally
+python3 -m http.server -d web 8000
 ```
+
+The hosted demo deploys from `.github/workflows/pages.yml`. It requires
+Pages to be switched on once under **Settings → Pages → Source: GitHub
+Actions**; the workflow token cannot create the site itself.
 
 ## Status
 
