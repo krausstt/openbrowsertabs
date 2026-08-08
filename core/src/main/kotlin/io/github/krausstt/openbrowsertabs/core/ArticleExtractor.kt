@@ -91,7 +91,8 @@ object ArticleExtractor {
         val semantic = doc.selectFirst("article") ?: doc.selectFirst("main")
         val candidate = semantic ?: doc.select("div, section")
             .maxByOrNull { el -> el.select("> p").sumOf { it.text().length } }
-        val container = candidate ?: doc.body() ?: return null
+        // jsoup always synthesises a body element, so this cannot be null
+        val container = candidate ?: doc.body()
         val paragraphs = container.select("p")
             .map { it.text().trim() }
             .filter { it.length > 40 } // drop crumbs, captions, cookie hints

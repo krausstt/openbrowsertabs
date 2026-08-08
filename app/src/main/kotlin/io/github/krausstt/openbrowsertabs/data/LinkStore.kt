@@ -112,7 +112,9 @@ class LinkStore(context: Context) :
         )
         // seeded from the goal profile in the design doc, so the first launch
         // already shows something meaningful instead of an empty shelf
-        val seed = listOf(
+        // explicit <Any>: mixed String/Int literals would otherwise infer an
+        // intersection type, which execSQL's reified bindArgs rejects
+        val seed = listOf<Array<Any>>(
             arrayOf("KI & Agenten", "🤖", "llm_agents", "", 1, 0),
             arrayOf("Home Lab", "🏠", "embedded_iot,coding_devops", "", 0, 1),
             arrayOf("Audio & Video", "🎧", "audio_music", "video", 0, 2),
