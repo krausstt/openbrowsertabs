@@ -43,6 +43,34 @@ object Snippets {
     fun isPromotional(text: String): Boolean =
         PROMO_HINTS.containsMatchIn(text) || URL_PATTERN.findAll(text).count() >= 2
 
+    // Cookie/consent walls are served *instead of* the article, so their text
+    // extracts cleanly and looks like real content. Two independent signals
+    // are required so that genuine articles about privacy are not discarded.
+    private val CONSENT_STRONG = Regex(
+        "bis zu \\d+ (drittanbieter|partner)|wir und unsere partner|" +
+            "berechtigtes interesse|einwilligung jederzeit widerrufen|" +
+            "we and our partners|iab (tcf|europe)|" +
+            "accept all cookies|alle akzeptieren|zustimmen und weiter",
+        RegexOption.IGNORE_CASE,
+    )
+    private val CONSENT_WEAK = Regex(
+        "cookies?|einwilligung|consent|datenschutz|personenbezogene daten|" +
+            "verarbeitung|tracking|werbung|privacy policy|gerätemerkmale",
+        RegexOption.IGNORE_CASE,
+    )
+
+    /**
+     * Heuristic for consent-wall text captured instead of the article.
+     * Strong phrase alone is enough; otherwise several weak markers must
+     * appear in a short text (long articles naturally mention these words).
+     */
+    fun isConsentWall(text: String?): Boolean {
+        if (text.isNullOrBlank()) return false
+        if (CONSENT_STRONG.containsMatchIn(text)) return true
+        val hits = CONSENT_WEAK.findAll(text).map { it.value.lowercase() }.toSet().size
+        return hits >= 3 && wordCount(text) < 200
+    }
+
     /** Word count of extracted article text, used for the reading estimate. */
     fun wordCount(text: String?): Int =
         text?.trim()?.takeIf { it.isNotEmpty() }

@@ -27,6 +27,7 @@ data class LinkEntity(
     val enrichedAt: Long?,
     val relatedIds: List<Long>,
     val userTags: List<String>,  // hand-added, never overwritten by enrichment
+    val userSummary: String?,    // written by hand, outranks the scraped text
     val imageUrl: String?,       // captured for a later thumbnail tier
     val wordCount: Int,
 ) {
@@ -58,7 +59,7 @@ data class Space(
  * implementation later (Room KMP or SQLDelight for the iPad port).
  */
 class LinkStore(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "links.db", null, 4) {
+    SQLiteOpenHelper(context.applicationContext, "links.db", null, 5) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -85,12 +86,18 @@ class LinkStore(context: Context) :
         migrateToV2(db)
         migrateToV3(db)
         migrateToV4(db)
+        migrateToV5(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) migrateToV2(db)
         if (oldVersion < 3) migrateToV3(db)
         if (oldVersion < 4) migrateToV4(db)
+        if (oldVersion < 5) migrateToV5(db)
+    }
+
+    private fun migrateToV5(db: SQLiteDatabase) {
+        db.execSQL("ALTER TABLE links ADD COLUMN user_summary TEXT")
     }
 
     private fun migrateToV4(db: SQLiteDatabase) {
@@ -152,7 +159,7 @@ class LinkStore(context: Context) :
         "id, canonical_url, original_url, host, title, label, category, topics, " +
             "status, n_sightings, first_seen_at, last_seen_at, description, " +
             "site_name, published_at, enrichment_state, enriched_at, related_ids, " +
-            "user_tags, image_url, word_count"
+            "user_tags, image_url, word_count, user_summary"
 
     /**
      * Insert the link or, if the canonical URL is already known, record a new
@@ -237,7 +244,8 @@ class LinkStore(context: Context) :
     fun similarityDocs(): List<Pair<Long, String>> =
         readableDatabase.rawQuery(
             "SELECT id, COALESCE(title,'') || ' ' || COALESCE(label,'') || ' ' || " +
-                "COALESCE(topics,'') || ' ' || COALESCE(substr(content,1,1500),'') FROM links",
+                "COALESCE(topics,'') || ' ' || COALESCE(user_summary,'') || ' ' || " +
+                "COALESCE(substr(content,1,1500),'') FROM links",
             null,
         ).use { c ->
             generateSequence { if (c.moveToNext()) c.getLong(0) to c.getString(1) else null }.toList()
@@ -403,6 +411,20 @@ class LinkStore(context: Context) :
         return counts.entries.sortedByDescending { it.value }.associate { it.key to it.value }
     }
 
+    fun setUserSummary(id: Long, summary: String?) {
+        val values = ContentValues().apply {
+            if (summary.isNullOrBlank()) putNull("user_summary") else put("user_summary", summary)
+        }
+        writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
+    }
+
+    /** Recent links, for attaching a summary shared in from another app. */
+    fun recent(limit: Int = 40): List<LinkEntity> =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links ORDER BY last_seen_at DESC LIMIT ?",
+            arrayOf(limit.toString()),
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+
     fun setUserTags(id: Long, tags: List<String>) {
         val values = ContentValues().apply { put("user_tags", tags.joinToString(",")) }
         writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
@@ -461,6 +483,7 @@ class LinkStore(context: Context) :
             ?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList(),
         imageUrl = getStringOrNullAt("image_url"),
         wordCount = getInt(getColumnIndexOrThrow("word_count")),
+        userSummary = getStringOrNullAt("user_summary"),
     )
 
     private fun Cursor.toSpace() = Space(

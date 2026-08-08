@@ -74,6 +74,32 @@ class EnrichmentWorker(
         return when (val outcome = Enrichment.enrich(link.canonicalUrl)) {
             is Enrichment.Outcome.Enriched -> {
                 val a = outcome.article
+
+                // A consent wall is served *instead of* the article and
+                // extracts cleanly, so it would otherwise be stored as the
+                // page's content and poison both the summary and the
+                // similarity corpus. Keep the slug-derived title, drop the text.
+                if (Snippets.isConsentWall(a.text) || Snippets.isConsentWall(a.description)) {
+                    store.applyEnrichment(
+                        link.id,
+                        state = "unfetchable",
+                        title = Headline.best(a.title, outcome.finalUrl, a.siteName),
+                        siteName = a.siteName,
+                        imageUrl = a.imageUrl,
+                        topics = Categorizer.topics(
+                            listOfNotNull(a.title, outcome.finalUrl).joinToString(" "),
+                        ),
+                    )
+                    if (notify) {
+                        postNotification(
+                            link.id,
+                            title = Headline.best(a.title, outcome.finalUrl, a.siteName),
+                            text = "Gespeichert — hinter einem Cookie-Banner, kein Artikeltext. " +
+                                "Du kannst im Detail eine eigene Zusammenfassung eintragen.",
+                        )
+                    }
+                    return false
+                }
                 // catchy one-liner: page description, unless it's a fixed
                 // site-wide default (e.g. HuggingFace's identical tagline on
                 // every model page) or sponsor/affiliate-heavy (common in
@@ -93,7 +119,9 @@ class EnrichmentWorker(
 
                 store.applyEnrichment(
                     link.id, state = "done",
-                    title = a.title, description = oneLiner, content = a.text,
+                    // publisher-only titles ("Golem") fall back to the URL slug
+                    title = Headline.best(a.title, outcome.finalUrl, a.siteName),
+                    description = oneLiner, content = a.text,
                     siteName = a.siteName, publishedAt = a.publishedAt,
                     topics = refinedTopics,
                     imageUrl = a.imageUrl,
@@ -166,11 +194,14 @@ class EnrichmentWorker(
             return
         }
         ensureChannel(ctx)
+        // deep link straight to the entry instead of the app's front door
         val tap = PendingIntent.getActivity(
             ctx, linkId.toInt(),
-            Intent(ctx, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            },
+            Intent(Intent.ACTION_VIEW, android.net.Uri.parse("openbrowsertabs://link/$linkId"))
+                .setClass(ctx, MainActivity::class.java)
+                .apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(ctx, CHANNEL_ID)

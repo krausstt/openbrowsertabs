@@ -36,6 +36,7 @@ data class UiState(
     val untaggedCount: Int = 0,
     val attentionLinks: List<LinkEntity> = emptyList(),
     val attentionMode: String = "inbox",     // inbox | untagged
+    val pendingSummary: String? = null,      // text shared in, awaiting a target
     val message: String? = null,
 )
 
@@ -164,6 +165,29 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
         _state.value = _state.value.copy(attentionMode = mode)
         refresh()
     }
+
+    /** Hand-written summary; also feeds the similarity corpus. */
+    fun setSummary(link: LinkEntity, summary: String?) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { store.setUserSummary(link.id, summary?.trim()) }
+            _state.value = _state.value.copy(
+                message = if (summary.isNullOrBlank()) "Zusammenfassung entfernt"
+                else "Zusammenfassung gespeichert",
+            )
+            refresh()
+        }
+    }
+
+    /** Text shared in from another app, waiting to be attached to a link. */
+    fun setPendingSummary(text: String?) {
+        _state.value = _state.value.copy(pendingSummary = text)
+    }
+
+    suspend fun recentLinks(): List<LinkEntity> =
+        withContext(Dispatchers.IO) { store.recent() }
+
+    suspend fun linkById(id: Long): LinkEntity? =
+        withContext(Dispatchers.IO) { store.byId(id) }
 
     fun addUserTag(link: LinkEntity, tag: String) {
         val clean = tag.trim().removePrefix("#").lowercase().replace(' ', '_')

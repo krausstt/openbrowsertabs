@@ -19,7 +19,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -68,25 +73,75 @@ import io.github.krausstt.openbrowsertabs.ui.SpacesScreen
 import io.github.krausstt.openbrowsertabs.ui.TagChip
 
 class MainActivity : ComponentActivity() {
+
+    private val route = mutableStateOf<Route>(Route.None)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         EnrichmentWorker.ensureChannel(this)
+        route.value = routeFrom(intent)
         setContent {
             OpenTabsTheme {
-                LinksScreen()
+                LinksScreen(route = route.value, onRouteHandled = { route.value = Route.None })
             }
         }
     }
+
+    // singleTask: a deep link while the app is already open arrives here
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        route.value = routeFrom(intent)
+    }
+
+    private fun routeFrom(intent: Intent?): Route {
+        if (intent == null) return Route.None
+        intent.data?.takeIf { it.scheme == "openbrowsertabs" && it.host == "link" }
+            ?.lastPathSegment?.toLongOrNull()
+            ?.let { return Route.OpenLink(it) }
+        if (intent.action == Intent.ACTION_PROCESS_TEXT) {
+            val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
+                ?: intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT_READONLY)?.toString()
+            if (!text.isNullOrBlank()) return Route.AttachSummary(text)
+        }
+        return Route.None
+    }
+}
+
+/** Where an incoming intent wants to land. */
+sealed interface Route {
+    data object None : Route
+    data class OpenLink(val id: Long) : Route
+    data class AttachSummary(val text: String) : Route
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LinksScreen(vm: LinksViewModel = viewModel()) {
+fun LinksScreen(
+    vm: LinksViewModel = viewModel(),
+    route: Route = Route.None,
+    onRouteHandled: () -> Unit = {},
+) {
     val state by vm.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     var showImport by remember { mutableStateOf(false) }
     var selectedLink by remember { mutableStateOf<LinkEntity?>(null) }
+
+    // deep link / shared-text routing
+    LaunchedEffect(route) {
+        when (route) {
+            is Route.OpenLink -> {
+                vm.linkById(route.id)?.let { selectedLink = it }
+                onRouteHandled()
+            }
+            is Route.AttachSummary -> {
+                vm.setPendingSummary(route.text)
+                onRouteHandled()
+            }
+            Route.None -> Unit
+        }
+    }
 
     // enrichment results arrive as notifications — ask once on Android 13+
     val notifPermission = rememberLauncherForActivityResult(
@@ -231,6 +286,18 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
         )
     }
 
+    state.pendingSummary?.let { text ->
+        AttachSummaryDialog(
+            text = text,
+            loadCandidates = { vm.recentLinks() },
+            onDismiss = { vm.setPendingSummary(null) },
+            onPick = { target ->
+                vm.setSummary(target, text)
+                vm.setPendingSummary(null)
+            },
+        )
+    }
+
     selectedLink?.let { link ->
         var related by remember(link.id) { mutableStateOf<List<LinkEntity>>(emptyList()) }
         LaunchedEffect(link.id) { related = vm.relatedFor(link) }
@@ -246,6 +313,7 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
             onDismiss = { selectedLink = null },
             onAddTag = { vm.addUserTag(fresh, it) },
             onRemoveTag = { vm.removeUserTag(fresh, it) },
+            onSaveSummary = { vm.setSummary(fresh, it) },
             onArchive = {
                 vm.archive(fresh.id)
                 selectedLink = null
@@ -277,12 +345,15 @@ private fun LinkDetailDialog(
     onDismiss: () -> Unit,
     onAddTag: (String) -> Unit,
     onRemoveTag: (String) -> Unit,
+    onSaveSummary: (String?) -> Unit,
     onArchive: () -> Unit,
     onRestore: () -> Unit,
     onDelete: () -> Unit,
     onOpen: () -> Unit,
 ) {
     var newTag by remember { mutableStateOf("") }
+    var editingSummary by remember(link.id) { mutableStateOf(false) }
+    var summaryDraft by remember(link.id) { mutableStateOf(link.userSummary.orEmpty()) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -298,9 +369,53 @@ private fun LinkDetailDialog(
             }
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                link.description?.let {
-                    Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 6)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+            ) {
+                // a hand-written summary replaces the scraped text entirely —
+                // it is the better source and the reason the field exists
+                if (editingSummary) {
+                    OutlinedTextField(
+                        value = summaryDraft,
+                        onValueChange = { summaryDraft = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Eigene Zusammenfassung") },
+                        minLines = 4,
+                        maxLines = 12,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextButton(onClick = {
+                            onSaveSummary(summaryDraft)
+                            editingSummary = false
+                        }) { Text("Speichern") }
+                        TextButton(onClick = {
+                            summaryDraft = link.userSummary.orEmpty()
+                            editingSummary = false
+                        }) { Text("Abbrechen") }
+                        if (!link.userSummary.isNullOrBlank()) {
+                            TextButton(onClick = {
+                                onSaveSummary(null)
+                                summaryDraft = ""
+                                editingSummary = false
+                            }) { Text("Löschen") }
+                        }
+                    }
+                } else if (!link.userSummary.isNullOrBlank()) {
+                    Text(
+                        "Deine Zusammenfassung",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(link.userSummary, style = MaterialTheme.typography.bodyMedium)
+                    TextButton(onClick = { editingSummary = true }) { Text("Bearbeiten") }
+                } else {
+                    link.description?.let {
+                        Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 6)
+                    }
+                    TextButton(onClick = { editingSummary = true }) {
+                        Text("+ Zusammenfassung hinzufügen")
+                    }
                 }
 
                 Text(
@@ -378,6 +493,82 @@ private fun LinkDetailDialog(
         },
         confirmButton = { TextButton(onClick = onOpen) { Text("Öffnen") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Schließen") } },
+    )
+}
+
+/**
+ * Text selected in another app (an LLM answer, a note) arrives here via
+ * ACTION_PROCESS_TEXT; pick which saved link it summarises.
+ */
+@Composable
+private fun AttachSummaryDialog(
+    text: String,
+    loadCandidates: suspend () -> List<LinkEntity>,
+    onDismiss: () -> Unit,
+    onPick: (LinkEntity) -> Unit,
+) {
+    var candidates by remember { mutableStateOf<List<LinkEntity>>(emptyList()) }
+    var filter by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) { candidates = loadCandidates() }
+
+    val shown = remember(candidates, filter) {
+        if (filter.isBlank()) candidates
+        else candidates.filter {
+            (it.title.orEmpty() + " " + it.host).contains(filter, ignoreCase = true)
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Zusammenfassung zuordnen") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text.take(160).let { if (text.length > 160) "$it …" else it },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = filter,
+                    onValueChange = { filter = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Link suchen …") },
+                    singleLine = true,
+                )
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 320.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    items(shown, key = { it.id }) { candidate ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onPick(candidate) }
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            MonogramTile(candidate.host, size = 32)
+                            Column(modifier = Modifier.padding(start = 10.dp)) {
+                                Text(
+                                    candidate.title?.let {
+                                        Headline.shortHeadline(it, candidate.canonicalUrl)
+                                    } ?: candidate.host,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 1,
+                                )
+                                Text(
+                                    candidate.host,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Abbrechen") } },
     )
 }
 
