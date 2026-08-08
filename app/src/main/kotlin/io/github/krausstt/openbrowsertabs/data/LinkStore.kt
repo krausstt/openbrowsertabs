@@ -26,6 +26,30 @@ data class LinkEntity(
     val enrichmentState: String, // pending | done | unfetchable
     val enrichedAt: Long?,
     val relatedIds: List<Long>,
+    val userTags: List<String>,  // hand-added, never overwritten by enrichment
+    val imageUrl: String?,       // captured for a later thumbnail tier
+    val wordCount: Int,
+) {
+    /** Auto topics plus hand-added tags, de-duplicated, for display + filtering. */
+    val allTags: List<String>
+        get() = (topics.filter { it != "untagged" } + userTags).distinct()
+}
+
+/**
+ * A Space is a *saved filter*, not a folder: it matches links by tag or
+ * category instead of owning them. Items therefore flow into spaces as they
+ * get enriched, with no membership table to maintain and no orphans when a
+ * link is deleted. The trade-off (no "pin this one item here regardless")
+ * is documented in docs/design/2026-07-30-mobile-ui.md.
+ */
+data class Space(
+    val id: Long,
+    val name: String,
+    val icon: String,
+    val matchTags: List<String>,
+    val matchCategories: List<String>,
+    val pinned: Boolean,
+    val position: Int,
 )
 
 /**
@@ -34,7 +58,7 @@ data class LinkEntity(
  * implementation later (Room KMP or SQLDelight for the iPad port).
  */
 class LinkStore(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "links.db", null, 3) {
+    SQLiteOpenHelper(context.applicationContext, "links.db", null, 4) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -60,11 +84,49 @@ class LinkStore(context: Context) :
         db.execSQL("CREATE INDEX idx_links_category ON links(category)")
         migrateToV2(db)
         migrateToV3(db)
+        migrateToV4(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) migrateToV2(db)
         if (oldVersion < 3) migrateToV3(db)
+        if (oldVersion < 4) migrateToV4(db)
+    }
+
+    private fun migrateToV4(db: SQLiteDatabase) {
+        db.execSQL("ALTER TABLE links ADD COLUMN user_tags TEXT")
+        db.execSQL("ALTER TABLE links ADD COLUMN image_url TEXT")
+        db.execSQL("ALTER TABLE links ADD COLUMN word_count INTEGER NOT NULL DEFAULT 0")
+        db.execSQL(
+            """
+            CREATE TABLE spaces (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                icon TEXT NOT NULL DEFAULT '📁',
+                match_tags TEXT NOT NULL DEFAULT '',
+                match_categories TEXT NOT NULL DEFAULT '',
+                pinned INTEGER NOT NULL DEFAULT 0,
+                position INTEGER NOT NULL DEFAULT 0
+            )
+            """.trimIndent(),
+        )
+        // seeded from the goal profile in the design doc, so the first launch
+        // already shows something meaningful instead of an empty shelf
+        val seed = listOf(
+            arrayOf("KI & Agenten", "🤖", "llm_agents", "", 1, 0),
+            arrayOf("Home Lab", "🏠", "embedded_iot,coding_devops", "", 0, 1),
+            arrayOf("Audio & Video", "🎧", "audio_music", "video", 0, 2),
+            arrayOf("Hardware", "🖥", "hardware", "", 0, 3),
+            arrayOf("Lesen", "📚", "", "article,blog,paper", 0, 4),
+            arrayOf("Kaufen", "🛒", "", "shopping", 0, 5),
+        )
+        seed.forEach { row ->
+            db.execSQL(
+                "INSERT INTO spaces (name, icon, match_tags, match_categories, pinned, position)" +
+                    " VALUES (?, ?, ?, ?, ?, ?)",
+                row,
+            )
+        }
     }
 
     private fun migrateToV3(db: SQLiteDatabase) {
@@ -87,7 +149,8 @@ class LinkStore(context: Context) :
     private val entityColumns =
         "id, canonical_url, original_url, host, title, label, category, topics, " +
             "status, n_sightings, first_seen_at, last_seen_at, description, " +
-            "site_name, published_at, enrichment_state, enriched_at, related_ids"
+            "site_name, published_at, enrichment_state, enriched_at, related_ids, " +
+            "user_tags, image_url, word_count"
 
     /**
      * Insert the link or, if the canonical URL is already known, record a new
@@ -230,6 +293,8 @@ class LinkStore(context: Context) :
         siteName: String? = null,
         publishedAt: String? = null,
         topics: List<String>? = null,
+        imageUrl: String? = null,
+        wordCount: Int? = null,
         now: Long = System.currentTimeMillis(),
     ) {
         val values = ContentValues().apply {
@@ -241,6 +306,8 @@ class LinkStore(context: Context) :
             if (siteName != null) put("site_name", siteName)
             if (publishedAt != null) put("published_at", publishedAt)
             if (topics != null) put("topics", topics.joinToString(","))
+            if (imageUrl != null) put("image_url", imageUrl)
+            if (wordCount != null) put("word_count", wordCount)
         }
         writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
     }
@@ -255,6 +322,108 @@ class LinkStore(context: Context) :
             buildMap { while (c.moveToNext()) put(c.getString(0), c.getInt(1)) }
         }
     }
+
+    // ------------------------------------------------------------- spaces
+    fun spaces(): List<Space> =
+        readableDatabase.rawQuery(
+            "SELECT id, name, icon, match_tags, match_categories, pinned, position " +
+                "FROM spaces ORDER BY pinned DESC, position ASC",
+            null,
+        ).use { c ->
+            generateSequence { if (c.moveToNext()) c.toSpace() else null }.toList()
+        }
+
+    /** Links matching a space's saved filter: any tag hit OR any category hit. */
+    fun linksInSpace(space: Space, status: String? = "open"): List<LinkEntity> {
+        val where = StringBuilder("1=1")
+        val args = ArrayList<String>()
+        if (status != null) {
+            where.append(" AND status = ?"); args.add(status)
+        }
+        val clauses = ArrayList<String>()
+        space.matchTags.forEach {
+            // ',' padding prevents "audio" from matching "audio_music"
+            clauses.add("(',' || topics || ',' || COALESCE(user_tags,'') || ',') LIKE ?")
+            args.add("%,$it,%")
+        }
+        space.matchCategories.forEach {
+            clauses.add("category = ?"); args.add(it)
+        }
+        if (clauses.isEmpty()) return emptyList()
+        where.append(" AND (").append(clauses.joinToString(" OR ")).append(")")
+        return readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE $where ORDER BY last_seen_at DESC",
+            args.toTypedArray(),
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+    }
+
+    fun spaceCount(space: Space, status: String? = "open"): Int =
+        linksInSpace(space, status).size
+
+    fun setSpacePinned(id: Long, pinned: Boolean) {
+        val values = ContentValues().apply { put("pinned", if (pinned) 1 else 0) }
+        writableDatabase.update("spaces", values, "id = ?", arrayOf(id.toString()))
+    }
+
+    fun createSpace(name: String, icon: String, tags: List<String>, categories: List<String>): Long {
+        val values = ContentValues().apply {
+            put("name", name)
+            put("icon", icon)
+            put("match_tags", tags.joinToString(","))
+            put("match_categories", categories.joinToString(","))
+            put("pinned", 0)
+            put("position", 99)
+        }
+        return writableDatabase.insert("spaces", null, values)
+    }
+
+    fun deleteSpace(id: Long) {
+        writableDatabase.delete("spaces", "id = ?", arrayOf(id.toString()))
+    }
+
+    // --------------------------------------------------------------- tags
+    /** Tag -> count over open links, auto topics and hand-added tags combined. */
+    fun tagCounts(status: String? = "open"): Map<String, Int> {
+        val (where, args) =
+            if (status != null) "WHERE status = ?" to arrayOf(status) else "" to emptyArray<String>()
+        val counts = LinkedHashMap<String, Int>()
+        readableDatabase.rawQuery(
+            "SELECT topics, user_tags FROM links $where", args,
+        ).use { c ->
+            while (c.moveToNext()) {
+                val tags = (c.getString(0) ?: "").split(",") + (c.getString(1) ?: "").split(",")
+                tags.map { it.trim() }
+                    .filter { it.isNotEmpty() && it != "untagged" }
+                    .distinct()
+                    .forEach { counts[it] = (counts[it] ?: 0) + 1 }
+            }
+        }
+        return counts.entries.sortedByDescending { it.value }.associate { it.key to it.value }
+    }
+
+    fun setUserTags(id: Long, tags: List<String>) {
+        val values = ContentValues().apply { put("user_tags", tags.joinToString(",")) }
+        writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
+    }
+
+    // --------------------------------------------------- needs attention
+    /** Open links with no usable tag at all — the "untagged" bucket. */
+    fun untagged(): List<LinkEntity> =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE status = 'open' " +
+                "AND (topics = '' OR topics = 'untagged') " +
+                "AND (user_tags IS NULL OR user_tags = '') " +
+                "ORDER BY last_seen_at DESC",
+            null,
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+
+    /** Open links still waiting for (or failed at) enrichment. */
+    fun inbox(): List<LinkEntity> =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE status = 'open' " +
+                "AND enrichment_state != 'done' ORDER BY last_seen_at DESC",
+            null,
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
 
     fun setStatus(id: Long, status: String) {
         val values = ContentValues().apply { put("status", status) }
@@ -286,6 +455,20 @@ class LinkStore(context: Context) :
         else getLong(getColumnIndexOrThrow("enriched_at")),
         relatedIds = getStringOrNullAt("related_ids")
             ?.split(",")?.mapNotNull { it.toLongOrNull() } ?: emptyList(),
+        userTags = getStringOrNullAt("user_tags")
+            ?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList(),
+        imageUrl = getStringOrNullAt("image_url"),
+        wordCount = getInt(getColumnIndexOrThrow("word_count")),
+    )
+
+    private fun Cursor.toSpace() = Space(
+        id = getLong(0),
+        name = getString(1),
+        icon = getString(2),
+        matchTags = getString(3).split(",").map { it.trim() }.filter { it.isNotEmpty() },
+        matchCategories = getString(4).split(",").map { it.trim() }.filter { it.isNotEmpty() },
+        pinned = getInt(5) == 1,
+        position = getInt(6),
     )
 
     private fun Cursor.getStringOrNullAt(column: String): String? {

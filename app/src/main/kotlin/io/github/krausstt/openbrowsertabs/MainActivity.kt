@@ -12,25 +12,25 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -58,13 +58,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.krausstt.openbrowsertabs.core.Headline
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
+import io.github.krausstt.openbrowsertabs.ui.BrowseScreen
+import io.github.krausstt.openbrowsertabs.ui.InboxScreen
+import io.github.krausstt.openbrowsertabs.ui.MonogramTile
+import io.github.krausstt.openbrowsertabs.ui.NavIcon
+import io.github.krausstt.openbrowsertabs.ui.OpenTabsTheme
+import io.github.krausstt.openbrowsertabs.ui.SearchScreen
+import io.github.krausstt.openbrowsertabs.ui.SpacesScreen
+import io.github.krausstt.openbrowsertabs.ui.TagChip
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         EnrichmentWorker.ensureChannel(this)
         setContent {
-            MaterialTheme {
+            OpenTabsTheme {
                 LinksScreen()
             }
         }
@@ -110,75 +118,105 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
         }
     }
 
+    val openLink: (LinkEntity) -> Unit = { selectedLink = it }
+    val jumpToTag: (String) -> Unit = { tag ->
+        vm.toggleTag(tag)
+        vm.setTab(Tab.BROWSE)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("OpenBrowserTabs") },
-                actions = {
-                    IconButton(onClick = { showImport = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Links importieren")
-                    }
+                title = {
+                    Text(
+                        when (state.tab) {
+                            Tab.BROWSE -> "Alle Links"
+                            Tab.SPACES -> "Open Tabs"
+                            Tab.SEARCH -> "Suche"
+                            Tab.INBOX -> "Braucht Aufmerksamkeit"
+                        },
+                        fontWeight = FontWeight.Bold,
+                    )
                 },
             )
         },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = state.tab == Tab.SPACES,
+                    onClick = { vm.setTab(Tab.SPACES) },
+                    icon = { NavIcon("🗂", state.tab == Tab.SPACES) },
+                    label = { Text("Spaces") },
+                )
+                NavigationBarItem(
+                    selected = state.tab == Tab.BROWSE,
+                    onClick = { vm.setTab(Tab.BROWSE) },
+                    icon = { NavIcon("📚", state.tab == Tab.BROWSE) },
+                    label = { Text("Alle") },
+                )
+                NavigationBarItem(
+                    selected = state.tab == Tab.SEARCH,
+                    onClick = { vm.setTab(Tab.SEARCH) },
+                    icon = { NavIcon("🔍", state.tab == Tab.SEARCH) },
+                    label = { Text("Suche") },
+                )
+                NavigationBarItem(
+                    selected = state.tab == Tab.INBOX,
+                    onClick = { vm.setTab(Tab.INBOX) },
+                    icon = {
+                        BadgedBox(
+                            badge = {
+                                if (state.inboxCount > 0) Badge { Text("${state.inboxCount}") }
+                            },
+                        ) { NavIcon("📥", state.tab == Tab.INBOX) }
+                    },
+                    label = { Text("Inbox") },
+                )
+            }
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showImport = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Links hinzufügen")
+            }
+        },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 12.dp),
+                .padding(padding),
         ) {
-            OutlinedTextField(
-                value = state.query,
-                onValueChange = vm::setQuery,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("URL, Titel oder Suchbegriff filtern …") },
-                singleLine = true,
-            )
-
-            Row(
-                modifier = Modifier.padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                listOf("open" to "Offen", "archived" to "Archiv", "all" to "Alle").forEach { (key, name) ->
-                    FilterChip(
-                        selected = state.statusFilter == key,
-                        onClick = { vm.setStatusFilter(key) },
-                        label = { Text(name) },
-                    )
-                }
-            }
-
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(state.categoryCounts.entries.sortedByDescending { it.value }.toList()) { (cat, n) ->
-                    FilterChip(
-                        selected = state.categoryFilter == cat,
-                        onClick = { vm.setCategoryFilter(if (state.categoryFilter == cat) null else cat) },
-                        label = { Text("${CATEGORY_NAMES[cat] ?: cat} $n") },
-                    )
-                }
-            }
-
-            Text(
-                text = "${state.links.size} Links",
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(vertical = 6.dp),
-            )
-
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                items(state.links, key = { it.id }) { link ->
-                    LinkRow(
-                        link = link,
-                        onOpen = { selectedLink = link },
-                        onArchive = { vm.archive(link.id) },
-                        onRestore = { vm.restore(link.id) },
-                        onDelete = { vm.delete(link.id) },
-                    )
-                }
+            when (state.tab) {
+                Tab.SPACES -> SpacesScreen(
+                    state = state,
+                    onOpenSpace = vm::openSpace,
+                    onOpenLink = openLink,
+                    onToggleTag = jumpToTag,
+                    onAttention = { mode ->
+                        vm.setAttentionMode(mode)
+                        vm.setTab(Tab.INBOX)
+                    },
+                    onTogglePin = vm::togglePin,
+                )
+                Tab.BROWSE -> BrowseScreen(
+                    state = state,
+                    onOpen = openLink,
+                    onToggleTag = vm::toggleTag,
+                    onClearTags = vm::clearTags,
+                    onStatus = vm::setStatusFilter,
+                )
+                Tab.SEARCH -> SearchScreen(
+                    state = state,
+                    onQuery = vm::setQuery,
+                    onOpen = openLink,
+                    onToggleTag = jumpToTag,
+                )
+                Tab.INBOX -> InboxScreen(
+                    state = state,
+                    onMode = vm::setAttentionMode,
+                    onOpen = openLink,
+                    onToggleTag = jumpToTag,
+                )
             }
         }
     }
@@ -196,14 +234,33 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
     selectedLink?.let { link ->
         var related by remember(link.id) { mutableStateOf<List<LinkEntity>>(emptyList()) }
         LaunchedEffect(link.id) { related = vm.relatedFor(link) }
+        // re-read from state so tag edits are reflected without reopening
+        val fresh = state.links.firstOrNull { it.id == link.id }
+            ?: state.spaceLinks.firstOrNull { it.id == link.id }
+            ?: state.attentionLinks.firstOrNull { it.id == link.id }
+            ?: link
         LinkDetailDialog(
-            link = link,
+            link = fresh,
             related = related,
             onRelatedClick = { selectedLink = it },
             onDismiss = { selectedLink = null },
+            onAddTag = { vm.addUserTag(fresh, it) },
+            onRemoveTag = { vm.removeUserTag(fresh, it) },
+            onArchive = {
+                vm.archive(fresh.id)
+                selectedLink = null
+            },
+            onRestore = {
+                vm.restore(fresh.id)
+                selectedLink = null
+            },
+            onDelete = {
+                vm.delete(fresh.id)
+                selectedLink = null
+            },
             onOpen = {
                 runCatching {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link.canonicalUrl)))
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fresh.canonicalUrl)))
                 }
                 selectedLink = null
             },
@@ -211,24 +268,81 @@ fun LinksScreen(vm: LinksViewModel = viewModel()) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LinkDetailDialog(
     link: LinkEntity,
     related: List<LinkEntity>,
     onRelatedClick: (LinkEntity) -> Unit,
     onDismiss: () -> Unit,
+    onAddTag: (String) -> Unit,
+    onRemoveTag: (String) -> Unit,
+    onArchive: () -> Unit,
+    onRestore: () -> Unit,
+    onDelete: () -> Unit,
     onOpen: () -> Unit,
 ) {
+    var newTag by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(link.label?.let { "🔍 $it" } ?: link.title ?: link.host)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                MonogramTile(link.host, size = 38)
+                Text(
+                    text = link.label?.let { "🔍 $it" }
+                        ?: link.title?.let { Headline.shortHeadline(it, link.canonicalUrl) }
+                        ?: link.host,
+                    modifier = Modifier.padding(start = 10.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 link.description?.let {
-                    Text(it, style = MaterialTheme.typography.bodyMedium)
+                    Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 6)
                 }
+
+                Text(
+                    "Tags",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    link.allTags.forEach { tag ->
+                        // hand-added tags are highlighted and removable;
+                        // derived ones are shown but not editable here
+                        TagChip(
+                            tag = tag,
+                            selected = tag in link.userTags,
+                            onClick = { if (tag in link.userTags) onRemoveTag(tag) },
+                        )
+                    }
+                    if (link.allTags.isEmpty()) {
+                        Text(
+                            "noch keine",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OutlinedTextField(
+                        value = newTag,
+                        onValueChange = { newTag = it },
+                        modifier = Modifier.fillMaxWidth(0.72f),
+                        placeholder = { Text("Tag hinzufügen") },
+                        singleLine = true,
+                    )
+                    TextButton(
+                        onClick = {
+                            onAddTag(newTag)
+                            newTag = ""
+                        },
+                        enabled = newTag.isNotBlank(),
+                    ) { Text("Hinzufügen") }
+                }
+
                 if (related.isNotEmpty()) {
                     Text(
                         "Hängt zusammen mit",
@@ -245,92 +359,26 @@ private fun LinkDetailDialog(
                         )
                     }
                 }
-                val meta = buildList {
-                    add(CATEGORY_NAMES[link.category] ?: link.category)
-                    link.siteName?.let { add(it) } ?: add(link.host)
-                    link.publishedAt?.take(10)?.let { add(it) }
-                    if (link.nSightings > 1) add("${link.nSightings}× gesehen")
-                    add(enrichmentLabel(link.enrichmentState))
-                }
-                Text(
-                    meta.joinToString(" · "),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+
                 Text(
                     link.canonicalUrl,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (link.status == "open") {
+                        TextButton(onClick = onArchive) { Text("Archivieren") }
+                    } else {
+                        TextButton(onClick = onRestore) { Text("Zurückholen") }
+                        TextButton(onClick = onDelete) { Text("Löschen") }
+                    }
+                }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onOpen) { Text("Öffnen") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Schließen") }
-        },
+        confirmButton = { TextButton(onClick = onOpen) { Text("Öffnen") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Schließen") } },
     )
-}
-
-private fun enrichmentLabel(state: String): String = when (state) {
-    "done" -> "angereichert ✓"
-    "unfetchable" -> "Seite nicht abrufbar"
-    else -> "Anreicherung ausstehend"
-}
-
-@Composable
-private fun LinkRow(
-    link: LinkEntity,
-    onOpen: () -> Unit,
-    onArchive: () -> Unit,
-    onRestore: () -> Unit,
-    onDelete: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onOpen)
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            val headline = link.label?.let { "🔍 $it" }
-                ?: link.title?.let { Headline.shortHeadline(it, link.canonicalUrl) }
-                ?: (link.host + shortPath(link.canonicalUrl))
-            Text(
-                text = headline,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-            )
-            val meta = buildList {
-                add(CATEGORY_NAMES[link.category] ?: link.category)
-                add(link.host)
-                if (link.nSightings > 1) add("${link.nSightings}× gesehen")
-                // quiet by default: only surface non-final enrichment states
-                if (link.enrichmentState == "pending") add("⏳")
-                if (link.enrichmentState == "unfetchable") add("⚠ nicht abrufbar")
-            }
-            Text(
-                text = meta.joinToString(" · "),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (link.status == "open") {
-            IconButton(onClick = onArchive) {
-                Icon(Icons.Default.Done, contentDescription = "Archivieren")
-            }
-        } else {
-            IconButton(onClick = onRestore) {
-                Icon(Icons.Default.Refresh, contentDescription = "Wiederherstellen")
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Endgültig löschen")
-            }
-        }
-    }
 }
 
 @Composable
@@ -362,11 +410,4 @@ private fun ImportDialog(onDismiss: () -> Unit, onImport: (String) -> Unit) {
             TextButton(onClick = onDismiss) { Text("Abbrechen") }
         },
     )
-}
-
-private fun shortPath(url: String): String {
-    val path = url.removePrefix("https://").substringAfter('/', "")
-    if (path.isEmpty()) return ""
-    val decoded = runCatching { java.net.URLDecoder.decode(path, Charsets.UTF_8) }.getOrDefault(path)
-    return "/" + decoded.take(60)
 }

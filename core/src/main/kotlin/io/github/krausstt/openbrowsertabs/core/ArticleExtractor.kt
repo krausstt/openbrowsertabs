@@ -10,6 +10,13 @@ data class Article(
     val text: String?,
     val siteName: String?,
     val publishedAt: String?,   // ISO string as found in metadata, unparsed
+    /**
+     * og:image, stored but not rendered yet: showing it means an image
+     * loading dependency and a third-party request per list row, which
+     * would leak the reading list to those hosts. Captured now so the
+     * decision stays open without a re-crawl.
+     */
+    val imageUrl: String? = null,
 )
 
 /**
@@ -49,10 +56,22 @@ object ArticleExtractor {
             doc.selectFirst("time[datetime]")?.attr("datetime"),
         )
 
+        val imageUrl = firstNonBlank(
+            meta(doc, "og:image"),
+            meta(doc, "twitter:image"),
+        )?.let { absolutize(doc, it) }
+
         NOISE_TAGS.forEach { tag -> doc.select(tag).remove() }
         val text = bestTextBlock(doc)?.take(MAX_TEXT_CHARS)
 
-        return Article(title, description, text, siteName, publishedAt)
+        return Article(title, description, text, siteName, publishedAt, imageUrl)
+    }
+
+    /** Resolve a possibly relative image URL against the page's base URI. */
+    private fun absolutize(doc: Document, url: String): String? {
+        if (url.startsWith("http://") || url.startsWith("https://")) return url
+        val base = doc.baseUri().ifBlank { return null }
+        return runCatching { java.net.URI(base).resolve(url).toString() }.getOrNull()
     }
 
     private fun meta(doc: Document, property: String): String? =

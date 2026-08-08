@@ -96,6 +96,8 @@ class EnrichmentWorker(
                     title = a.title, description = oneLiner, content = a.text,
                     siteName = a.siteName, publishedAt = a.publishedAt,
                     topics = refinedTopics,
+                    imageUrl = a.imageUrl,
+                    wordCount = Snippets.wordCount(a.text),
                 )
                 val related = computeRelated(store, link.id)
                 if (notify) {
