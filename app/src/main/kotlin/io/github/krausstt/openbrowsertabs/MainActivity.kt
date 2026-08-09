@@ -68,6 +68,7 @@ import io.github.krausstt.openbrowsertabs.ui.InboxScreen
 import io.github.krausstt.openbrowsertabs.ui.MonogramTile
 import io.github.krausstt.openbrowsertabs.ui.NavIcon
 import io.github.krausstt.openbrowsertabs.ui.OpenTabsTheme
+import io.github.krausstt.openbrowsertabs.ui.ReviewScreen
 import io.github.krausstt.openbrowsertabs.ui.SearchScreen
 import io.github.krausstt.openbrowsertabs.ui.SpacesScreen
 import io.github.krausstt.openbrowsertabs.ui.TagChip
@@ -179,6 +180,23 @@ fun LinksScreen(
         vm.setTab(Tab.BROWSE)
     }
 
+    // a running session takes over the whole screen: one entry, no list,
+    // no navigation bar competing for attention
+    state.session?.let { session ->
+        ReviewScreen(
+            session = session,
+            curatedTotal = state.curatedTotal,
+            onCommit = vm::commitCurrent,
+            onSkip = vm::skipCurrent,
+            onArchive = vm::archiveCurrent,
+            onOpenUrl = { url ->
+                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+            },
+            onEnd = vm::endSession,
+        )
+        return
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -271,6 +289,7 @@ fun LinksScreen(
                     onMode = vm::setAttentionMode,
                     onOpen = openLink,
                     onToggleTag = jumpToTag,
+                    onStartSession = vm::startSession,
                 )
             }
         }

@@ -404,12 +404,20 @@ fun InboxScreen(
     onMode: (String) -> Unit,
     onOpen: (LinkEntity) -> Unit,
     onToggleTag: (String) -> Unit,
+    onStartSession: (Int) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = ScreenPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        item {
+            SessionStarter(
+                pending = state.untaggedCount + state.inboxCount,
+                curatedTotal = state.curatedTotal,
+                onStart = onStartSession,
+            )
+        }
         item {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

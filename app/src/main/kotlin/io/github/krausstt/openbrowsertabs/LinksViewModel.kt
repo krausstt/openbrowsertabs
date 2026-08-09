@@ -37,8 +37,30 @@ data class UiState(
     val attentionLinks: List<LinkEntity> = emptyList(),
     val attentionMode: String = "inbox",     // inbox | untagged
     val pendingSummary: String? = null,      // text shared in, awaiting a target
+    val session: ReviewSession? = null,
+    val curatedTotal: Int = 0,
     val message: String? = null,
 )
+
+/**
+ * A short, finite curation run. Deliberately session-scoped and not
+ * persisted: there is no daily streak to break and nothing to lose by not
+ * playing tomorrow. The score only counts what was actually gained.
+ */
+data class ReviewSession(
+    val queue: List<LinkEntity>,
+    val index: Int = 0,
+    val target: Int,
+    val done: Int = 0,
+    val connectionsMade: Int = 0,
+    val skipped: Int = 0,
+    val suggestions: List<String> = emptyList(),
+    val lastReward: String? = null,
+    val finished: Boolean = false,
+) {
+    val current: LinkEntity? get() = queue.getOrNull(index)
+    val progress: Float get() = if (target == 0) 0f else (done.toFloat() / target).coerceIn(0f, 1f)
+}
 
 class LinksViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -69,6 +91,7 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
                     inbox = store.inbox(),
                     untagged = store.untagged(),
                     spaceLinks = s.openSpace?.let { store.linksInSpace(it) } ?: emptyList(),
+                    curated = store.curatedCount(),
                 )
             }
             _state.value = _state.value.copy(
@@ -83,6 +106,7 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
                 attentionLinks =
                     if (_state.value.attentionMode == "untagged") snapshot.untagged
                     else snapshot.inbox,
+                curatedTotal = snapshot.curated,
             )
         }
     }
@@ -96,6 +120,7 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
         val inbox: List<LinkEntity>,
         val untagged: List<LinkEntity>,
         val spaceLinks: List<LinkEntity>,
+        val curated: Int,
     )
 
     fun setTab(tab: Tab) {
@@ -164,6 +189,104 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
     fun setAttentionMode(mode: String) {
         _state.value = _state.value.copy(attentionMode = mode)
         refresh()
+    }
+
+    // ------------------------------------------------------- review session
+    fun startSession(target: Int) {
+        viewModelScope.launch {
+            val queue = withContext(Dispatchers.IO) { store.reviewQueue(target * 2) }
+            if (queue.isEmpty()) {
+                _state.value = _state.value.copy(message = "Nichts offen — alles kuratiert.")
+                return@launch
+            }
+            val session = ReviewSession(queue = queue, target = minOf(target, queue.size))
+            _state.value = _state.value.copy(session = session)
+            loadSuggestions()
+        }
+    }
+
+    fun endSession() {
+        _state.value = _state.value.copy(session = null)
+        refresh()
+    }
+
+    /** Tag candidates for the current entry, cheapest-decision first. */
+    private fun loadSuggestions() {
+        val link = _state.value.session?.current ?: return
+        viewModelScope.launch {
+            val suggestions = withContext(Dispatchers.IO) {
+                val fromRelated = store.byIds(link.relatedIds).flatMap { it.allTags }
+                val global = store.tagCounts().keys
+                // tags of neighbours first: they are usually the right answer
+                (fromRelated + link.topics.filter { it != "untagged" } + global)
+                    .distinct()
+                    .filterNot { it in link.allTags }
+                    .take(8)
+            }
+            _state.value = _state.value.copy(
+                session = _state.value.session?.copy(suggestions = suggestions),
+            )
+        }
+    }
+
+    /** Commit the current entry and advance; the reward is what it connected to. */
+    fun commitCurrent(tags: List<String>, summary: String?) {
+        val session = _state.value.session ?: return
+        val link = session.current ?: return
+        viewModelScope.launch {
+            val connections = withContext(Dispatchers.IO) {
+                if (tags.isNotEmpty()) store.setUserTags(link.id, (link.userTags + tags).distinct())
+                if (!summary.isNullOrBlank()) store.setUserSummary(link.id, summary.trim())
+                store.countSharingAnyTag(tags, link.id)
+            }
+            val done = session.done + 1
+            val reward = when {
+                connections >= 20 -> "🎉 verbindet sich mit $connections Einträgen"
+                connections > 0 -> "🔗 verbindet sich mit $connections Einträgen"
+                !summary.isNullOrBlank() -> "📝 Zusammenfassung gesichert"
+                else -> "✓ gespeichert"
+            }
+            _state.value = _state.value.copy(
+                session = session.copy(
+                    index = session.index + 1,
+                    done = done,
+                    connectionsMade = session.connectionsMade + connections,
+                    lastReward = reward,
+                    finished = done >= session.target || session.index + 1 >= session.queue.size,
+                ),
+                curatedTotal = withContext(Dispatchers.IO) { store.curatedCount() },
+            )
+            loadSuggestions()
+        }
+    }
+
+    fun skipCurrent() {
+        val session = _state.value.session ?: return
+        _state.value = _state.value.copy(
+            session = session.copy(
+                index = session.index + 1,
+                skipped = session.skipped + 1,
+                lastReward = null,
+                finished = session.index + 1 >= session.queue.size,
+            ),
+        )
+        loadSuggestions()
+    }
+
+    fun archiveCurrent() {
+        val session = _state.value.session ?: return
+        val link = session.current ?: return
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { store.setStatus(link.id, "archived") }
+            _state.value = _state.value.copy(
+                session = session.copy(
+                    index = session.index + 1,
+                    lastReward = "🗄 archiviert",
+                    finished = session.index + 1 >= session.queue.size,
+                ),
+            )
+            loadSuggestions()
+        }
     }
 
     /** Hand-written summary; also feeds the similarity corpus. */

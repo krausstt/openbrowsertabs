@@ -411,6 +411,46 @@ class LinkStore(context: Context) :
         return counts.entries.sortedByDescending { it.value }.associate { it.key to it.value }
     }
 
+    /**
+     * Links a review session should offer: untagged first (biggest gain per
+     * action), then the ones that failed enrichment and need a human summary.
+     * Search queries are skipped — their label already says everything.
+     */
+    fun reviewQueue(limit: Int): List<LinkEntity> =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE status = 'open' " +
+                "AND category != 'search_query' " +
+                "AND (user_tags IS NULL OR user_tags = '') " +
+                "AND (user_summary IS NULL OR user_summary = '') " +
+                "ORDER BY CASE WHEN topics = '' OR topics = 'untagged' THEN 0 ELSE 1 END, " +
+                "CASE WHEN enrichment_state = 'unfetchable' THEN 0 ELSE 1 END, " +
+                "last_seen_at DESC LIMIT ?",
+            arrayOf(limit.toString()),
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+
+    /** How many links carry a hand-made tag or summary — only ever grows. */
+    fun curatedCount(): Int =
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE " +
+                "(user_tags IS NOT NULL AND user_tags != '') OR " +
+                "(user_summary IS NOT NULL AND user_summary != '')",
+            null,
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+
+    /** Open links sharing at least one of these tags — the honest reward
+     *  signal after tagging: how much this entry just connected to. */
+    fun countSharingAnyTag(tags: List<String>, excludingId: Long): Int {
+        if (tags.isEmpty()) return 0
+        val clauses = tags.joinToString(" OR ") {
+            "(',' || topics || ',' || COALESCE(user_tags,'') || ',') LIKE ?"
+        }
+        val args = tags.map { "%,$it,%" } + excludingId.toString()
+        return readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE status = 'open' AND ($clauses) AND id != ?",
+            args.toTypedArray(),
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+    }
+
     fun setUserSummary(id: Long, summary: String?) {
         val values = ContentValues().apply {
             if (summary.isNullOrBlank()) putNull("user_summary") else put("user_summary", summary)
