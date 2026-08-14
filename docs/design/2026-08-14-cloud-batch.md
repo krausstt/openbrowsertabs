@@ -102,6 +102,11 @@ Themen (ASR-Modelle / Kochrezepte / ESP32) getestet: drei themenreine Cluster,
 Danach läuft der Job wöchentlich. Der Rückweg (`enrich.jsonl` → App) ist **noch
 nicht gebaut** — aktuell ist der Import ein offener Punkt, siehe 5.
 
+> **Update 14.08.:** Der manuelle Dateitausch aus §4 ist als Dauerlösung
+> verworfen. Die Abwägung und die Empfehlung (GitHub Release-Assets im
+> privaten Repo, statischer PAT, kein OAuth) stehen in
+> `2026-08-14-sync-entscheidung.md`.
+
 ## 5. Offene Punkte
 
 - **Import-Pfad in die App**: `enrich.jsonl` einlesen und in
