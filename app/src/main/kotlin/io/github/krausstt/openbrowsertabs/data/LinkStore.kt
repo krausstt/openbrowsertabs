@@ -59,7 +59,7 @@ data class Space(
  * implementation later (Room KMP or SQLDelight for the iPad port).
  */
 class LinkStore(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "links.db", null, 5) {
+    SQLiteOpenHelper(context.applicationContext, "links.db", null, 6) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -87,6 +87,7 @@ class LinkStore(context: Context) :
         migrateToV3(db)
         migrateToV4(db)
         migrateToV5(db)
+        migrateToV6(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -94,6 +95,13 @@ class LinkStore(context: Context) :
         if (oldVersion < 3) migrateToV3(db)
         if (oldVersion < 4) migrateToV4(db)
         if (oldVersion < 5) migrateToV5(db)
+        if (oldVersion < 6) migrateToV6(db)
+    }
+
+    private fun migrateToV6(db: SQLiteDatabase) {
+        val now = System.currentTimeMillis()
+        GraphSchema.create(db, now)
+        GraphSchema.backfillFromLinks(db, now)
     }
 
     private fun migrateToV5(db: SQLiteDatabase) {
@@ -450,6 +458,13 @@ class LinkStore(context: Context) :
             args.toTypedArray(),
         ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
     }
+
+    /** Extracted article text — held apart from [entityColumns] because it is
+     *  large and only the export and embedding paths need it. */
+    fun contentOf(id: Long): String? =
+        readableDatabase.rawQuery(
+            "SELECT content FROM links WHERE id = ?", arrayOf(id.toString()),
+        ).use { c -> if (c.moveToFirst() && !c.isNull(0)) c.getString(0) else null }
 
     fun setUserSummary(id: Long, summary: String?) {
         val values = ContentValues().apply {

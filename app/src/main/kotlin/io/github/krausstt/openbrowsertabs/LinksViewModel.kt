@@ -3,12 +3,15 @@ package io.github.krausstt.openbrowsertabs
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.krausstt.openbrowsertabs.core.Clustering
 import io.github.krausstt.openbrowsertabs.core.LinkParser
 import io.github.krausstt.openbrowsertabs.core.LinkResolution
 import io.github.krausstt.openbrowsertabs.core.TextSimilarity
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.data.LinkStore
+import io.github.krausstt.openbrowsertabs.data.GraphStore
 import io.github.krausstt.openbrowsertabs.data.Space
+import io.github.krausstt.openbrowsertabs.export.Exporter
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -287,6 +290,42 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
             )
             loadSuggestions()
         }
+    }
+
+    // ------------------------------------------------------------ exports
+    /**
+     * Cluster the open collection with the local tag-based grouping and write
+     * every export flavour. Returns the directory holding the results.
+     */
+    suspend fun runExport(kind: String): java.io.File? = withContext(Dispatchers.IO) {
+        val links = store.query("open", null, "")
+        if (links.isEmpty()) return@withContext null
+        val exporter = Exporter(getApplication())
+        val clusters = Clustering.byTag(
+            links.map { Clustering.Item(it.id, it.allTags, it.category) },
+            labelFor = exporter::labelFor,
+        )
+        // persist the grouping so the UI and a later cloud run share one view
+        val graph = GraphStore(store.writableDatabase)
+        graph.replaceClusters(
+            runId = System.currentTimeMillis().toString(),
+            method = "local_tags",
+            clusters = clusters.mapNotNull { cluster ->
+                val ids = cluster.members.mapNotNull { graph.entityIdForLink(it) }
+                if (ids.isEmpty()) null else cluster.label to ids
+            },
+        )
+        when (kind) {
+            "notebooklm" -> exporter.writeNotebookLmBundle(links, clusters)
+            "markdown" -> exporter.writeDigestMarkdown(links, clusters)
+            "pdf" -> exporter.writeDigestPdf(links, clusters)
+            "interchange" -> exporter.writeInterchange(links) { store.contentOf(it) }
+            else -> null
+        }
+    }
+
+    fun report(message: String) {
+        _state.value = _state.value.copy(message = message)
     }
 
     /** Hand-written summary; also feeds the similarity corpus. */

@@ -49,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +61,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
+import io.github.krausstt.openbrowsertabs.core.Clustering
 import io.github.krausstt.openbrowsertabs.core.Headline
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
@@ -127,7 +130,9 @@ fun LinksScreen(
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     var showImport by remember { mutableStateOf(false) }
+    var showExport by remember { mutableStateOf(false) }
     var selectedLink by remember { mutableStateOf<LinkEntity?>(null) }
+    val scope = rememberCoroutineScope()
 
     // deep link / shared-text routing
     LaunchedEffect(route) {
@@ -210,6 +215,9 @@ fun LinksScreen(
                         },
                         fontWeight = FontWeight.Bold,
                     )
+                },
+                actions = {
+                    TextButton(onClick = { showExport = true }) { Text("Export") }
                 },
             )
         },
@@ -301,6 +309,24 @@ fun LinksScreen(
             onImport = { text ->
                 showImport = false
                 vm.addFromText(text)
+            },
+        )
+    }
+
+    if (showExport) {
+        ExportDialog(
+            onDismiss = { showExport = false },
+            onPick = { kind ->
+                showExport = false
+                scope.launch {
+                    val file = vm.runExport(kind)
+                    if (file == null) {
+                        vm.report("Nichts zu exportieren")
+                    } else {
+                        vm.report("Gespeichert: ${file.name}")
+                        shareExport(context, file)
+                    }
+                }
             },
         )
     }
@@ -589,6 +615,69 @@ private fun AttachSummaryDialog(
         confirmButton = {},
         dismissButton = { TextButton(onClick = onDismiss) { Text("Abbrechen") } },
     )
+}
+
+@Composable
+private fun ExportDialog(onDismiss: () -> Unit, onPick: (String) -> Unit) {
+    val options = listOf(
+        "notebooklm" to ("NotebookLM-Bundle" to
+            "Eine Textdatei pro Cluster, nur URLs, max. ${Clustering.MAX_MEMBERS} pro Datei"),
+        "markdown" to ("Digest als Markdown" to "Alle Cluster mit Titeln und Notizen"),
+        "pdf" to ("Digest als PDF" to "Dasselbe, druck- und teilbar"),
+        "interchange" to ("Cloud-Interchange (JSONL)" to
+            "Rohdaten für den Batch-Job: Embeddings und Clustering"),
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Exportieren") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                options.forEach { (kind, texts) ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onPick(kind) }
+                            .padding(vertical = 10.dp),
+                    ) {
+                        Text(texts.first, style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            texts.second,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Abbrechen") } },
+    )
+}
+
+/** Hand the finished export to the share sheet via the app's FileProvider. */
+private fun shareExport(context: android.content.Context, file: java.io.File) {
+    runCatching {
+        // a directory export (NotebookLM bundle) has nothing single to share
+        if (file.isDirectory) return
+        val uri = androidx.core.content.FileProvider.getUriForFile(
+            context, "${context.packageName}.fileprovider", file,
+        )
+        val mime = when (file.extension) {
+            "pdf" -> "application/pdf"
+            "md" -> "text/markdown"
+            else -> "text/plain"
+        }
+        context.startActivity(
+            Intent.createChooser(
+                Intent(Intent.ACTION_SEND).apply {
+                    type = mime
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                },
+                "Export teilen",
+            ),
+        )
+    }
 }
 
 @Composable
