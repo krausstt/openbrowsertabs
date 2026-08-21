@@ -278,6 +278,7 @@ fun LinksScreen(
                         vm.setTab(Tab.INBOX)
                     },
                     onTogglePin = vm::togglePin,
+                    onArchive = { vm.archive(it.id) },
                 )
                 Tab.BROWSE -> BrowseScreen(
                     state = state,

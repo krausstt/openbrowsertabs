@@ -12,6 +12,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -158,8 +162,10 @@ fun SpacesScreen(
     onToggleTag: (String) -> Unit,
     onAttention: (String) -> Unit,
     onTogglePin: (Space) -> Unit,
+    onArchive: (LinkEntity) -> Unit = {},
 ) {
     val density = LocalDensity.current
+    var columns by remember { mutableStateOf(2) }
     var headerHeight by remember { mutableStateOf(0f) }
     var headerOffset by remember { mutableStateOf(0f) }
 
@@ -181,17 +187,21 @@ fun SpacesScreen(
             .fillMaxSize()
             .nestedScroll(collapse),
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columns),
+            modifier = Modifier
+                .fillMaxSize()
+                .pinchToZoomColumns(columns) { columns = it },
             contentPadding = PaddingValues(
-                start = 14.dp,
-                end = 14.dp,
+                start = 12.dp,
+                end = 12.dp,
                 top = with(density) { headerHeight.toDp() } + 8.dp,
                 bottom = 24.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     AttentionTile(
                         label = "Posteingang",
@@ -210,29 +220,31 @@ fun SpacesScreen(
                 }
             }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = selected?.let { "${it.icon}  ${it.name}" } ?: "Zuletzt gespeichert",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        "${feed.size}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Column(modifier = Modifier.padding(top = 4.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = selected?.let { "${it.icon}  ${it.name}" }
+                                ?: "Zuletzt gespeichert",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            "${feed.size}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    ZoomHint(columns)
                 }
             }
 
             if (selected != null) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
                             text = if (selected.pinned) "📌 Angeheftet" else "Anheften",
@@ -251,7 +263,7 @@ fun SpacesScreen(
             }
 
             if (feed.isEmpty()) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     EmptyState(
                         if (selected == null) {
                             "Noch nichts gespeichert. Teile einen Link aus einer anderen App hierher."
@@ -262,7 +274,12 @@ fun SpacesScreen(
                 }
             }
             items(feed, key = { it.id }) { link ->
-                LinkCard(link = link, onClick = { onOpenLink(link) }, onTagClick = onToggleTag)
+                TabCard(
+                    link = link,
+                    onClick = { onOpenLink(link) },
+                    onDismiss = { onArchive(link) },
+                    compact = columns >= 3,
+                )
             }
         }
 
