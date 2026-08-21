@@ -157,9 +157,10 @@ fun TabCard(
  */
 fun Modifier.pinchToZoomColumns(
     columns: Int,
-    onColumnsChange: (Int) -> Unit,
     min: Int = 1,
     max: Int = 4,
+    // last position so the call site can use trailing-lambda syntax
+    onColumnsChange: (Int) -> Unit,
 ): Modifier = this.pointerInput(columns) {
     var accumulated = 1f
     awaitEachGesture {
