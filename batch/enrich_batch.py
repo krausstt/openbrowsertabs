@@ -51,10 +51,32 @@ def read_nodes(path: Path):
     return meta, nodes
 
 
+# what a one-tap reaction means in words, so it lands in the embedding as
+# language rather than as an opaque token the model has never seen
+REACTION_TEXT = {
+    "idea": "eigene Idee Inspiration",
+    "understand": "verstehen lernen Grundlagen",
+    "build": "nachbauen ausprobieren Projekt",
+    "reference": "Nachschlagewerk Referenz",
+    "now": "bald lesen aktuell",
+}
+
+
 def text_of(node: dict) -> str:
-    """What the model sees. A hand-written summary outranks scraped text —
-    it is the better signal and the reason the field exists."""
+    """What the model sees.
+
+    Hand-written signal outranks scraped text throughout: the note is a word
+    the human chose for this page, the summary is a paragraph they wrote, and
+    both say more about where an entry belongs than 2,000 characters of body
+    copy ever will. The note is repeated deliberately — one word among 2,000
+    otherwise contributes almost nothing to the vector."""
     parts = [node.get("label", ""), " ".join(node.get("tags", []))]
+    note = (node.get("note") or "").strip()
+    if note:
+        parts.append(f"{note} {note}")
+    reaction = REACTION_TEXT.get(node.get("reaction") or "")
+    if reaction:
+        parts.append(reaction)
     if node.get("summary"):
         parts.append(node["summary"])
     else:

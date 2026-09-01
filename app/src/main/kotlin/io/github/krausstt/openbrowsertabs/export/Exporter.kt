@@ -183,7 +183,7 @@ class Exporter(private val context: Context) {
             out.write(
                 JSONObject()
                     .put("type", "meta")
-                    .put("schema", 6)
+                    .put("schema", 7)
                     .put("exported_at", System.currentTimeMillis())
                     .put("count", links.size)
                     .toString(),
@@ -201,6 +201,10 @@ class Exporter(private val context: Context) {
                     .put("tags", JSONArray(link.allTags))
                     .put("saved_at", link.firstSeenAt)
                 link.userSummary?.let { node.put("summary", it) }
+                // the save moment: the human's own words and stance carry more
+                // weight in the embedding than any amount of scraped body text
+                link.reaction?.let { node.put("reaction", it) }
+                link.userNote?.let { node.put("note", it) }
                 link.description?.let { node.put("description", it) }
                 contentFor(link.id)?.take(8000)?.let { node.put("text", it) }
                 out.write(node.toString())

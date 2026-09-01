@@ -30,6 +30,7 @@ import io.github.krausstt.openbrowsertabs.CATEGORY_NAMES
 import io.github.krausstt.openbrowsertabs.TOPIC_NAMES
 import io.github.krausstt.openbrowsertabs.core.Headline
 import io.github.krausstt.openbrowsertabs.core.Monogram
+import io.github.krausstt.openbrowsertabs.core.Reactions
 import io.github.krausstt.openbrowsertabs.core.Snippets
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import java.util.Calendar
@@ -57,9 +58,10 @@ fun LinkCard(
             MonogramTile(link.host)
             Column(modifier = Modifier.padding(start = 12.dp)) {
                 Text(
-                    text = link.label?.let { "🔍 $it" }
-                        ?: link.title?.let { Headline.shortHeadline(it, link.canonicalUrl) }
-                        ?: link.host,
+                    text = Reactions.emojiOf(link.reaction).let { if (it.isEmpty()) "" else "$it " } +
+                        (link.label?.let { "🔍 $it" }
+                            ?: link.title?.let { Headline.shortHeadline(it, link.canonicalUrl) }
+                            ?: link.host),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 2,
@@ -137,6 +139,8 @@ fun TagChip(tag: String, onClick: () -> Unit, selected: Boolean = false) {
 
 /** "Artikel · 4 Min · vor 3 Tagen" — type, effort, recency, in that order. */
 private fun metaLine(link: LinkEntity): String = buildList {
+    // the note goes first: it is the only line on the card the human wrote
+    link.userNote?.let { add("„$it“") }
     add(CATEGORY_NAMES[link.category] ?: link.category)
     Snippets.readingMinutes(link.wordCount)?.let { add("$it Min") }
     add(relativeDay(link.lastSeenAt))

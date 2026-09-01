@@ -67,10 +67,11 @@ import io.github.krausstt.openbrowsertabs.core.Headline
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 import io.github.krausstt.openbrowsertabs.ui.BrowseScreen
-import io.github.krausstt.openbrowsertabs.ui.InboxScreen
+import io.github.krausstt.openbrowsertabs.ui.StackScreen
 import io.github.krausstt.openbrowsertabs.ui.MonogramTile
 import io.github.krausstt.openbrowsertabs.ui.NavIcon
 import io.github.krausstt.openbrowsertabs.ui.OpenTabsTheme
+import io.github.krausstt.openbrowsertabs.ui.ReactionRow
 import io.github.krausstt.openbrowsertabs.ui.ReviewScreen
 import io.github.krausstt.openbrowsertabs.ui.SearchScreen
 import io.github.krausstt.openbrowsertabs.ui.SpacesScreen
@@ -211,7 +212,7 @@ fun LinksScreen(
                             Tab.BROWSE -> "Alle Links"
                             Tab.SPACES -> "Open Tabs"
                             Tab.SEARCH -> "Suche"
-                            Tab.INBOX -> "Braucht Aufmerksamkeit"
+                            Tab.INBOX -> "Dein Stapel"
                         },
                         fontWeight = FontWeight.Bold,
                     )
@@ -245,13 +246,16 @@ fun LinksScreen(
                     selected = state.tab == Tab.INBOX,
                     onClick = { vm.setTab(Tab.INBOX) },
                     icon = {
+                        // the stack, not the backlog: a badge reading 791 is a
+                        // verdict, and the only response to a verdict is to
+                        // close the app
                         BadgedBox(
                             badge = {
-                                if (state.inboxCount > 0) Badge { Text("${state.inboxCount}") }
+                                if (state.stack.isNotEmpty()) Badge { Text("${state.stack.size}") }
                             },
                         ) { NavIcon("📥", state.tab == Tab.INBOX) }
                     },
-                    label = { Text("Inbox") },
+                    label = { Text("Stapel") },
                 )
             }
         },
@@ -273,10 +277,7 @@ fun LinksScreen(
                     onOpenSpace = vm::openSpace,
                     onOpenLink = openLink,
                     onToggleTag = jumpToTag,
-                    onAttention = { mode ->
-                        vm.setAttentionMode(mode)
-                        vm.setTab(Tab.INBOX)
-                    },
+                    onAttention = { vm.setTab(Tab.INBOX) },
                     onTogglePin = vm::togglePin,
                     onArchive = { vm.archive(it.id) },
                 )
@@ -293,12 +294,14 @@ fun LinksScreen(
                     onOpen = openLink,
                     onToggleTag = jumpToTag,
                 )
-                Tab.INBOX -> InboxScreen(
+                Tab.INBOX -> StackScreen(
                     state = state,
-                    onMode = vm::setAttentionMode,
                     onOpen = openLink,
-                    onToggleTag = jumpToTag,
+                    onReact = vm::react,
+                    onArchive = vm::archiveFromStack,
+                    onNextStack = vm::nextStack,
                     onStartSession = vm::startSession,
+                    onShowRest = vm::toggleRest,
                 )
             }
         }
@@ -360,6 +363,8 @@ fun LinksScreen(
             onAddTag = { vm.addUserTag(fresh, it) },
             onRemoveTag = { vm.removeUserTag(fresh, it) },
             onSaveSummary = { vm.setSummary(fresh, it) },
+            onReact = { vm.react(fresh.id, it) },
+            onNote = { vm.setNote(fresh.id, it) },
             onArchive = {
                 vm.archive(fresh.id)
                 selectedLink = null
@@ -392,6 +397,8 @@ private fun LinkDetailDialog(
     onAddTag: (String) -> Unit,
     onRemoveTag: (String) -> Unit,
     onSaveSummary: (String?) -> Unit,
+    onReact: (String) -> Unit,
+    onNote: (String) -> Unit,
     onArchive: () -> Unit,
     onRestore: () -> Unit,
     onDelete: () -> Unit,
@@ -419,6 +426,24 @@ private fun LinkDetailDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.verticalScroll(rememberScrollState()),
             ) {
+                // the same five stances as the save sheet, so the answer can
+                // still be given later — the moment of sharing is not the only
+                // moment you know why something mattered
+                ReactionRow(selected = link.reaction, onReact = onReact)
+                var noteDraft by remember(link.id) { mutableStateOf(link.userNote.orEmpty()) }
+                OutlinedTextField(
+                    value = noteDraft,
+                    onValueChange = { noteDraft = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text("Ein Wort Kontext") },
+                    trailingIcon = {
+                        if (noteDraft != link.userNote.orEmpty()) {
+                            TextButton(onClick = { onNote(noteDraft) }) { Text("OK") }
+                        }
+                    },
+                )
+
                 // a hand-written summary replaces the scraped text entirely —
                 // it is the better source and the reason the field exists
                 if (editingSummary) {

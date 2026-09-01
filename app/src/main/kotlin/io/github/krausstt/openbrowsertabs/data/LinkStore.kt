@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import io.github.krausstt.openbrowsertabs.core.ParsedLink
+import io.github.krausstt.openbrowsertabs.core.Reactions
 
 data class LinkEntity(
     val id: Long,
@@ -30,7 +31,14 @@ data class LinkEntity(
     val userSummary: String?,    // written by hand, outranks the scraped text
     val imageUrl: String?,       // captured for a later thumbnail tier
     val wordCount: Int,
+    val reaction: String?,       // one-tap stance from the save moment, see core.Reactions
+    val userNote: String?,       // the one word of context asked for on save
+    val contextAt: Long?,        // when the human last said something about it
 ) {
+    /** Whether the human ever said anything about this entry at all. */
+    val hasContext: Boolean
+        get() = reaction != null || !userNote.isNullOrBlank() || !userSummary.isNullOrBlank()
+
     /** Auto topics plus hand-added tags, de-duplicated, for display + filtering. */
     val allTags: List<String>
         get() = (topics.filter { it != "untagged" } + userTags).distinct()
@@ -59,7 +67,7 @@ data class Space(
  * implementation later (Room KMP or SQLDelight for the iPad port).
  */
 class LinkStore(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "links.db", null, 6) {
+    SQLiteOpenHelper(context.applicationContext, "links.db", null, 7) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -88,6 +96,7 @@ class LinkStore(context: Context) :
         migrateToV4(db)
         migrateToV5(db)
         migrateToV6(db)
+        migrateToV7(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -96,6 +105,17 @@ class LinkStore(context: Context) :
         if (oldVersion < 4) migrateToV4(db)
         if (oldVersion < 5) migrateToV5(db)
         if (oldVersion < 6) migrateToV6(db)
+        if (oldVersion < 7) migrateToV7(db)
+    }
+
+    /** The save-moment fields. Both are the human's own words and are never
+     *  written by enrichment — see docs/design/2026-09-01-save-moment.md. */
+    private fun migrateToV7(db: SQLiteDatabase) {
+        db.execSQL("ALTER TABLE links ADD COLUMN reaction TEXT")
+        db.execSQL("ALTER TABLE links ADD COLUMN user_note TEXT")
+        // when the human last said something, so "done today" is a real
+        // measurement and not last_seen_at standing in for it
+        db.execSQL("ALTER TABLE links ADD COLUMN context_at INTEGER")
     }
 
     private fun migrateToV6(db: SQLiteDatabase) {
@@ -167,7 +187,7 @@ class LinkStore(context: Context) :
         "id, canonical_url, original_url, host, title, label, category, topics, " +
             "status, n_sightings, first_seen_at, last_seen_at, description, " +
             "site_name, published_at, enrichment_state, enriched_at, related_ids, " +
-            "user_tags, image_url, word_count, user_summary"
+            "user_tags, image_url, word_count, user_summary, reaction, user_note, context_at"
 
     /**
      * Insert the link or, if the canonical URL is already known, record a new
@@ -441,7 +461,9 @@ class LinkStore(context: Context) :
         readableDatabase.rawQuery(
             "SELECT COUNT(*) FROM links WHERE " +
                 "(user_tags IS NOT NULL AND user_tags != '') OR " +
-                "(user_summary IS NOT NULL AND user_summary != '')",
+                "(user_summary IS NOT NULL AND user_summary != '') OR " +
+                "(user_note IS NOT NULL AND user_note != '') OR " +
+                "reaction IS NOT NULL",
             null,
         ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
@@ -496,6 +518,22 @@ class LinkStore(context: Context) :
             null,
         ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
 
+    /** Counts only — the list forms were loaded on every refresh purely to
+     *  call `.size` on several hundred rows. */
+    fun untaggedCount(): Int =
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE status = 'open' " +
+                "AND (topics = '' OR topics = 'untagged') " +
+                "AND (user_tags IS NULL OR user_tags = '')",
+            null,
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+
+    fun inboxCount(): Int =
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE status = 'open' AND enrichment_state != 'done'",
+            null,
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+
     /** Open links still waiting for (or failed at) enrichment. */
     fun inbox(): List<LinkEntity> =
         readableDatabase.rawQuery(
@@ -503,6 +541,74 @@ class LinkStore(context: Context) :
                 "AND enrichment_state != 'done' ORDER BY last_seen_at DESC",
             null,
         ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+
+    // ------------------------------------------------- the save moment
+    /**
+     * Store the one-tap stance. Written by the share overlay and by the
+     * inbox stack; enrichment never touches it, so a cloud run can neither
+     * overwrite nor invent one.
+     */
+    fun setReaction(id: Long, reaction: String?, now: Long = System.currentTimeMillis()) {
+        val clean = Reactions.sanitize(reaction)
+        val values = ContentValues().apply {
+            if (clean == null) putNull("reaction") else put("reaction", clean)
+            if (clean != null) put("context_at", now)
+        }
+        writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
+    }
+
+    fun setUserNote(id: Long, note: String?, now: Long = System.currentTimeMillis()) {
+        val clean = Reactions.normalizeNote(note)
+        val values = ContentValues().apply {
+            if (clean == null) putNull("user_note") else put("user_note", clean)
+            if (clean != null) put("context_at", now)
+        }
+        writableDatabase.update("links", values, "id = ?", arrayOf(id.toString()))
+    }
+
+    /**
+     * Candidates for the inbox stack: open, not a bare search query, and
+     * still missing either context or tags. Ranking happens in
+     * [io.github.krausstt.openbrowsertabs.core.InboxBatch] so it is testable
+     * without a device.
+     */
+    fun batchCandidates(limit: Int = 400): List<LinkEntity> =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE status = 'open' " +
+                "AND category != 'search_query' " +
+                "AND (reaction IS NULL OR user_note IS NULL " +
+                "     OR topics = '' OR topics = 'untagged') " +
+                "ORDER BY last_seen_at DESC LIMIT ?",
+            arrayOf(limit.toString()),
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+
+    private val withoutContextWhere =
+        "status = 'open' AND category != 'search_query' " +
+            "AND reaction IS NULL " +
+            "AND (user_note IS NULL OR user_note = '') " +
+            "AND (user_summary IS NULL OR user_summary = '')"
+
+    /** Open links the human has never said anything about, newest first. */
+    fun withoutContext(limit: Int = 300): List<LinkEntity> =
+        readableDatabase.rawQuery(
+            "SELECT $entityColumns FROM links WHERE $withoutContextWhere " +
+                "ORDER BY last_seen_at DESC LIMIT ?",
+            arrayOf(limit.toString()),
+        ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
+
+    /** Open links the human has never said anything about. */
+    fun withoutContextCount(): Int =
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE $withoutContextWhere", null,
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+
+    /** Entries touched at the save moment since [since] — the honest
+     *  "you did this" number, which cannot grow while you sleep. */
+    fun contextGivenSince(since: Long): Int =
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE context_at >= ?",
+            arrayOf(since.toString()),
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
     fun setStatus(id: Long, status: String) {
         val values = ContentValues().apply { put("status", status) }
@@ -539,6 +645,10 @@ class LinkStore(context: Context) :
         imageUrl = getStringOrNullAt("image_url"),
         wordCount = getInt(getColumnIndexOrThrow("word_count")),
         userSummary = getStringOrNullAt("user_summary"),
+        reaction = getStringOrNullAt("reaction"),
+        userNote = getStringOrNullAt("user_note"),
+        contextAt = if (isNull(getColumnIndexOrThrow("context_at"))) null
+        else getLong(getColumnIndexOrThrow("context_at")),
     )
 
     private fun Cursor.toSpace() = Space(

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.krausstt.openbrowsertabs.core.Clustering
+import io.github.krausstt.openbrowsertabs.core.InboxBatch
 import io.github.krausstt.openbrowsertabs.core.LinkParser
 import io.github.krausstt.openbrowsertabs.core.LinkResolution
 import io.github.krausstt.openbrowsertabs.core.TextSimilarity
@@ -37,8 +38,12 @@ data class UiState(
     val spaceLinks: List<LinkEntity> = emptyList(),
     val inboxCount: Int = 0,
     val untaggedCount: Int = 0,
-    val attentionLinks: List<LinkEntity> = emptyList(),
-    val attentionMode: String = "inbox",     // inbox | untagged
+    val attentionLinks: List<LinkEntity> = emptyList(),   // only loaded on request
+    val stack: List<LinkEntity> = emptyList(),   // the finishable handful
+    val stackSize: Int = 0,                  // size it was dealt at, for progress
+    val withoutContextCount: Int = 0,        // the honest total, kept below the fold
+    val contextToday: Int = 0,               // what *you* did today; resets, never accrues
+    val showingRest: Boolean = false,
     val pendingSummary: String? = null,      // text shared in, awaiting a target
     val session: ReviewSession? = null,
     val curatedTotal: Int = 0,
@@ -91,10 +96,16 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
                     tagCounts = store.tagCounts(status),
                     spaces = spaces,
                     spaceCounts = spaces.associate { it.id to store.spaceCount(it) },
-                    inbox = store.inbox(),
-                    untagged = store.untagged(),
+                    inbox = store.inboxCount(),
+                    untagged = store.untaggedCount(),
                     spaceLinks = s.openSpace?.let { store.linksInSpace(it) } ?: emptyList(),
                     curated = store.curatedCount(),
+                    stack = if (s.stackSize == 0) dealStack()
+                    else store.byIds(s.stack.map { it.id }),
+                    // 300 rows are only read when the list is actually open
+                    rest = if (s.showingRest) store.withoutContext() else emptyList(),
+                    withoutContext = store.withoutContextCount(),
+                    contextToday = store.contextGivenSince(startOfToday()),
                 )
             }
             _state.value = _state.value.copy(
@@ -103,13 +114,16 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
                 tagCounts = snapshot.tagCounts,
                 spaces = snapshot.spaces,
                 spaceCounts = snapshot.spaceCounts,
-                inboxCount = snapshot.inbox.size,
-                untaggedCount = snapshot.untagged.size,
+                inboxCount = snapshot.inbox,
+                untaggedCount = snapshot.untagged,
                 spaceLinks = snapshot.spaceLinks,
-                attentionLinks =
-                    if (_state.value.attentionMode == "untagged") snapshot.untagged
-                    else snapshot.inbox,
+                attentionLinks = snapshot.rest,
                 curatedTotal = snapshot.curated,
+                stack = snapshot.stack,
+                stackSize = if (_state.value.stackSize == 0) snapshot.stack.size
+                else _state.value.stackSize,
+                withoutContextCount = snapshot.withoutContext,
+                contextToday = snapshot.contextToday,
             )
         }
     }
@@ -120,10 +134,14 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
         val tagCounts: Map<String, Int>,
         val spaces: List<Space>,
         val spaceCounts: Map<Long, Int>,
-        val inbox: List<LinkEntity>,
-        val untagged: List<LinkEntity>,
+        val inbox: Int,
+        val untagged: Int,
         val spaceLinks: List<LinkEntity>,
         val curated: Int,
+        val stack: List<LinkEntity>,
+        val rest: List<LinkEntity>,
+        val withoutContext: Int,
+        val contextToday: Int,
     )
 
     fun setTab(tab: Tab) {
@@ -189,9 +207,99 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setAttentionMode(mode: String) {
-        _state.value = _state.value.copy(attentionMode = mode)
+    // ------------------------------------------------------- the stack
+    /**
+     * Deal a handful out of the backlog.
+     *
+     * Called on first load and on request — never after a reaction. A stack
+     * that silently refills is the backlog again with extra steps: the point
+     * is that it can reach zero and stay there until you ask for more.
+     */
+    private fun dealStack(): List<LinkEntity> {
+        val candidates = store.batchCandidates()
+        val chosen = InboxBatch.pick(
+            candidates.map {
+                InboxBatch.Item(
+                    id = it.id,
+                    host = it.host,
+                    savedAt = it.lastSeenAt,
+                    sightings = it.nSightings,
+                    hasContext = it.hasContext,
+                    hasTags = it.allTags.isNotEmpty(),
+                )
+            },
+        )
+        val byId = candidates.associateBy { it.id }
+        return chosen.mapNotNull { byId[it] }
+    }
+
+    private fun startOfToday(): Long {
+        val cal = java.util.Calendar.getInstance()
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        cal.set(java.util.Calendar.MINUTE, 0)
+        cal.set(java.util.Calendar.SECOND, 0)
+        cal.set(java.util.Calendar.MILLISECOND, 0)
+        return cal.timeInMillis
+    }
+
+    /**
+     * One tap on a stack card. The entry is removed from the stack right
+     * away rather than on the next refresh — the reward for answering has to
+     * be that the thing goes away, immediately and visibly.
+     */
+    fun react(id: Long, reactionId: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { store.setReaction(id, reactionId) }
+            _state.value = _state.value.copy(
+                stack = _state.value.stack.filterNot { it.id == id },
+                contextToday = _state.value.contextToday + 1,
+            )
+            refreshCounts()
+        }
+    }
+
+    /** The typed word, from the detail view or a later revisit. */
+    fun setNote(id: Long, note: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { store.setUserNote(id, note) }
+            _state.value = _state.value.copy(message = "Kontext gemerkt")
+            refreshCounts()
+        }
+    }
+
+    fun archiveFromStack(id: Long) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { store.setStatus(id, "archived") }
+            _state.value = _state.value.copy(stack = _state.value.stack.filterNot { it.id == id })
+            refreshCounts()
+        }
+    }
+
+    /** Deal the next handful. Only ever on request — nothing refills itself. */
+    fun nextStack() {
+        viewModelScope.launch {
+            val fresh = withContext(Dispatchers.IO) { dealStack() }
+            _state.value = _state.value.copy(stack = fresh, stackSize = fresh.size)
+        }
+    }
+
+    fun toggleRest() {
+        _state.value = _state.value.copy(showingRest = !_state.value.showingRest)
         refresh()
+    }
+
+    /** Counts only — cheap enough to run after every tap. */
+    private fun refreshCounts() {
+        viewModelScope.launch {
+            val counts = withContext(Dispatchers.IO) {
+                Triple(store.withoutContextCount(), store.curatedCount(), store.inboxCount())
+            }
+            _state.value = _state.value.copy(
+                withoutContextCount = counts.first,
+                curatedTotal = counts.second,
+                inboxCount = counts.third,
+            )
+        }
     }
 
     // ------------------------------------------------------- review session

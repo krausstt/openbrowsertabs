@@ -6,20 +6,36 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.lifecycle.lifecycleScope
+import io.github.krausstt.openbrowsertabs.core.Headline
 import io.github.krausstt.openbrowsertabs.core.LinkParser
 import io.github.krausstt.openbrowsertabs.core.LinkResolution
+import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.data.LinkStore
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
+import io.github.krausstt.openbrowsertabs.ui.OpenTabsTheme
+import io.github.krausstt.openbrowsertabs.ui.SaveSheet
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Invisible share-sheet target: saves the shared link(s) immediately and
- * finishes. Accepts both plain shared text (EXTRA_TEXT, e.g. a browser tab)
- * and shared text files (EXTRA_STREAM, e.g. a numbered URL-list export).
- * Enrichment happens later in the background (Phase 2).
+ * Share-sheet target.
+ *
+ * The order of operations is the design: **store first, ask second.** A
+ * single shared link is written to the database before any UI exists, and
+ * only then does the save sheet appear to ask why it was kept. The question
+ * can therefore never cost a save — closing the sheet, backing out or
+ * killing the app all leave the entry exactly as it was before this screen
+ * existed, minus the context.
+ *
+ * Bulk shares (a URL-list export, several tabs at once) skip the sheet: one
+ * reaction cannot mean anything about forty links, and asking forty times is
+ * the opposite of low-threshold. Those drain through the background queue as
+ * before and surface later in the inbox stack.
  */
 class ShareReceiverActivity : ComponentActivity() {
 
@@ -39,12 +55,7 @@ class ShareReceiverActivity : ComponentActivity() {
 
             if (links.isEmpty()) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@ShareReceiverActivity,
-                        "Kein Link im geteilten Inhalt gefunden",
-                        Toast.LENGTH_SHORT,
-                    ).show()
-                    finish()
+                    toastAndFinish("Kein Link im geteilten Inhalt gefunden")
                 }
                 return@launch
             }
@@ -57,25 +68,63 @@ class ShareReceiverActivity : ComponentActivity() {
 
             // context-on-sight: enrich a single share right away (with result
             // notification); bulk shares drain in the background queue
-            if (links.size == 1) {
-                store.byCanonicalUrl(links[0].canonicalUrl)?.let {
-                    EnrichmentWorker.enqueueForLink(this@ShareReceiverActivity, it.id)
-                }
+            val single: LinkEntity? =
+                if (links.size == 1) store.byCanonicalUrl(links[0].canonicalUrl) else null
+            if (single != null) {
+                EnrichmentWorker.enqueueForLink(this@ShareReceiverActivity, single.id)
             } else {
                 EnrichmentWorker.enqueueDrain(this@ShareReceiverActivity)
             }
 
             withContext(Dispatchers.Main) {
-                val msg = when {
-                    links.size == 1 && added == 1 -> "Gespeichert: ${links[0].host}"
-                    links.size == 1 -> "Schon bekannt — Sichtung gezählt: ${links[0].host}"
-                    else -> "${links.size} Links verarbeitet, $added neu, " +
-                        "${links.size - added} als Sichtung gezählt"
+                if (single == null) {
+                    toastAndFinish(
+                        "${links.size} Links verarbeitet, $added neu, " +
+                            "${links.size - added} als Sichtung gezählt",
+                    )
+                } else {
+                    showSheet(store, single)
                 }
-                Toast.makeText(this@ShareReceiverActivity, msg, Toast.LENGTH_LONG).show()
-                finish()
             }
         }
+    }
+
+    private fun showSheet(store: LinkStore, link: LinkEntity) {
+        setContent {
+            OpenTabsTheme {
+                SaveSheet(
+                    host = link.host,
+                    title = Headline.best(link.title, link.canonicalUrl, link.host),
+                    sightings = link.nSightings,
+                    onReact = { id -> persist(store) { it.setReaction(link.id, id) } },
+                    onNote = { note -> persist(store) { it.setUserNote(link.id, note) } },
+                    onDismiss = { finish() },
+                )
+            }
+        }
+    }
+
+    /**
+     * Write, then leave immediately.
+     *
+     * Deliberately *not* on [lifecycleScope]: this activity is `noHistory`
+     * and finishes in the same breath, which cancels that scope and would
+     * race the write away. [writeScope] outlives the activity so the tap is
+     * never silently lost — the whole promise of the sheet.
+     */
+    private fun persist(store: LinkStore, block: (LinkStore) -> Unit) {
+        writeScope.launch { block(store) }
+        Toast.makeText(this, "Kontext gemerkt", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    private companion object {
+        val writeScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    }
+
+    private fun toastAndFinish(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        finish()
     }
 
     /** Read a shared text file (EXTRA_STREAM content URI), e.g. a URL-list export. */

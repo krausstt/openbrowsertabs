@@ -202,22 +202,16 @@ fun SpacesScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    AttentionTile(
-                        label = "Posteingang",
-                        hint = "Neu oder nicht angereichert",
-                        count = state.inboxCount,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onAttention("inbox") },
-                    )
-                    AttentionTile(
-                        label = "Ohne Tag",
-                        hint = "Noch keiner Gruppe zugeordnet",
-                        count = state.untaggedCount,
-                        modifier = Modifier.weight(1f),
-                        onClick = { onAttention("untagged") },
-                    )
-                }
+                // one small, finishable number instead of the two large ones
+                // that used to sit here (791 / 454) — see StackScreen for why
+                AttentionTile(
+                    label = "Dein Stapel",
+                    hint = if (state.stack.isEmpty()) "Fertig für jetzt"
+                    else "Ein Tipp pro Karte, dann ist er weg",
+                    count = state.stack.size,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onAttention("stack") },
+                )
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -467,63 +461,6 @@ fun SearchScreen(
 }
 
 /* ----------------------------------------------------------------- inbox */
-
-@Composable
-fun InboxScreen(
-    state: UiState,
-    onMode: (String) -> Unit,
-    onOpen: (LinkEntity) -> Unit,
-    onToggleTag: (String) -> Unit,
-    onStartSession: (Int) -> Unit,
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = ScreenPadding,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        item {
-            SessionStarter(
-                pending = state.untaggedCount + state.inboxCount,
-                curatedTotal = state.curatedTotal,
-                onStart = onStartSession,
-            )
-        }
-        item {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 8.dp),
-            ) {
-                FilterChip(
-                    selected = state.attentionMode == "inbox",
-                    onClick = { onMode("inbox") },
-                    label = { Text("Posteingang ${state.inboxCount}") },
-                )
-                FilterChip(
-                    selected = state.attentionMode == "untagged",
-                    onClick = { onMode("untagged") },
-                    label = { Text("Ohne Tag ${state.untaggedCount}") },
-                )
-            }
-        }
-        item {
-            Text(
-                text = if (state.attentionMode == "inbox") {
-                    "Diese Links warten noch auf die Anreicherung oder konnten nicht geladen werden."
-                } else {
-                    "Diese Links haben noch keinen Tag — tippe einen an, um ihn zu vergeben."
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (state.attentionLinks.isEmpty()) {
-            item { EmptyState("Nichts zu tun. Genau so soll es sein.") }
-        }
-        items(state.attentionLinks, key = { it.id }) { link ->
-            LinkCard(link = link, onClick = { onOpen(link) }, onTagClick = onToggleTag)
-        }
-    }
-}
 
 /** Small square icon slot used by the navigation bar. */
 @Composable

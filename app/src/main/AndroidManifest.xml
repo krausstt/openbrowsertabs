@@ -57,6 +57,7 @@
             android:excludeFromRecents="true"
             android:noHistory="true"
             android:label="Tab speichern"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.OpenBrowserTabs.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
