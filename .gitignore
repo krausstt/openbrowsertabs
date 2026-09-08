@@ -31,3 +31,7 @@ captures/
 .DS_Store
 .idea/
 .vscode/
+
+# batch pipeline scratch
+batch/__pycache__/
+*.jsonl

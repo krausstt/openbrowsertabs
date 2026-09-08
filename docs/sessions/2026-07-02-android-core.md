@@ -96,6 +96,61 @@ oft harte Zeilenumbrüche *mitten in* langen URLs — die zerreißt der
 Import. Für PDF-Exporte bleibt `pipeline/tabs_pipeline.py` der richtige
 Weg (repariert umbrochene URLs anhand der Listennummerierung).
 
+## Nachtrag: share.google-Problem (Chrome-Shares)
+
+Chrome/Google-App teilen statt der echten URL oft einen
+`share.google`-Kurzlink (Googles Tracking-Shortener). Anders als bei AMP
+steckt das Ziel **nicht** in der URL — Auflösung braucht einen HTTP-Request.
+Zweigleisige Lösung:
+
+1. **Einstellung (sofort):** Google-App → Profilbild → Einstellungen →
+   Allgemein → „Links zu Webseiten kürzen" **deaktivieren**. Gilt für
+   Shares aus Google-App/Discover/Suche.
+2. **In der App (robust):** Neuer `RedirectResolver` folgt beim Speichern
+   den Location-Headern bekannter Shortener (`share.google`, `goo.gl`,
+   `bit.ly`, `t.co`, `amzn.to`, …; max. 5 Hops, 4 s Timeout) und speichert
+   die aufgelöste Ziel-URL — Original-Kurzlink bleibt als Provenienz
+   erhalten. Schlägt die Auflösung fehl (offline/Interstitial), wird der
+   Kurzlink gespeichert und über das `pending_enrichment`-Flag später von
+   der Enrichment-Phase nachaufgelöst. Das ist bewusst das erste vorgezogene
+   Stück Phase 2.
+
+Gratis dazu: `google.com/url?q=…`-Klick-Tracking-Wrapper werden jetzt
+**offline** entpackt (das Ziel steckt dort in der URL) — in Python-Pipeline
+und Kotlin-Core synchron, mit Cross-Validation-Tests. Die App hat dafür
+neu die INTERNET-Permission (einzige Permission der App).
+
+## Nachtrag 2: Schneller Update-Loop (statt Artifact-Download)
+
+Entscheidung: **GitHub Releases + Obtainium** statt Firebase App
+Distribution — gleicher Komfort (Update-Benachrichtigung, 1-Tap-Install),
+aber ohne Firebase-Projekt, Service-Account und Tester-App.
+
+Was die CI jetzt zusätzlich kann (sobald die zwei Secrets gesetzt sind):
+
+- Release-APK **konsistent signiert** mit einem festen CI-Keystore
+  (vorher: jeder Runner ein eigener Debug-Key → jedes Update hätte
+  Deinstallation + Datenverlust bedeutet)
+- `versionCode` = CI-Run-Nummer → jeder Build ist ein gültiges Update
+- Pro Push ein **Pre-Release `dev-<n>`** mit direkt installierbarer APK
+
+### Einmalige Einrichtung (2 Repo-Secrets + Obtainium)
+
+1. GitHub → Repo → Settings → Secrets and variables → Actions →
+   „New repository secret":
+   - `CI_KEYSTORE_B64` — Base64 des Keystores (kommt per Chat, NICHT ins Repo)
+   - `CI_KEYSTORE_PASSWORD` — das zugehörige Passwort (kommt per Chat)
+2. [Obtainium](https://github.com/ImranR98/Obtainium) installieren →
+   „App hinzufügen" → Repo-URL `https://github.com/krausstt/openbrowsertabs`
+   eintragen → „Pre-Releases einbeziehen" aktivieren
+3. Einmalig die alte debug-signierte App **deinstallieren** (Signaturwechsel;
+   ab dann laufen alle Updates nahtlos drüber)
+
+Ohne Secrets läuft die CI unverändert weiter (Debug-APK als Artifact);
+der Release-Teil schaltet sich automatisch dazu, sobald die Secrets da sind.
+Hinweis: Der Keystore signiert nur diese Test-Builds — er liegt bewusst
+nicht im (öffentlichen) Repo, sondern nur in den Secrets.
+
 ## Offene Punkte (nächste Sessions)
 
 - [ ] **Phase 2 Enrichment** (wartet auf dein Home-Lab): FastAPI-Service,

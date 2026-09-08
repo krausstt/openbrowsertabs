@@ -1,0 +1,56 @@
+# Copy this into your PRIVATE data repository as
+# .github/workflows/enrich.yml
+#
+# Why a separate private repo: the collection is private, the code is public.
+# This workflow pulls the code from the public repo and keeps the data here,
+# where artifacts and commits are not publicly readable.
+#
+# Free-tier budget: 2000 Linux minutes/month on GitHub Free. A run over ~1400
+# links is roughly 5-10 minutes including setup, so a weekly schedule uses
+# ~40 minutes/month and a daily one ~150-300.
+name: Enrich collection
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'      # weekly, Monday early. Scheduled runs can lag 5-30 min.
+  workflow_dispatch:
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # the model is ~450 MB; caching keeps every later run to a short download
+      - name: Cache models and wheels
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/pip
+          key: enrich-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Install the public pipeline
+        run: |
+          curl -sSL -o enrich_batch.py \
+            https://raw.githubusercontent.com/krausstt/openbrowsertabs/main/batch/enrich_batch.py
+          curl -sSL -o requirements.txt \
+            https://raw.githubusercontent.com/krausstt/openbrowsertabs/main/batch/requirements.txt
+          pip install -r requirements.txt
+
+      - name: Run enrichment
+        run: python3 enrich_batch.py data/export.jsonl data/enrich.jsonl
+
+      # the result lands back in this private repo; the phone pulls it
+      - name: Commit result
+        run: |
+          git config user.name  "enrich-bot"
+          git config user.email "enrich-bot@users.noreply.github.com"
+          git add data/enrich.jsonl
+          git diff --staged --quiet || git commit -m "Enrichment run $(date -u +%F)"
+          git push

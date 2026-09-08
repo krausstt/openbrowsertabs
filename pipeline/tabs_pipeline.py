@@ -22,7 +22,9 @@ from collections import Counter
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode, unquote
 
-from pypdf import PdfReader
+# pypdf is imported lazily inside parse_pdf: normalize/categorize/topics are
+# pure functions that other callers (web/build_demo_data.py, tests) reuse
+# without ever touching a PDF, and should not require the dependency.
 
 ENTRY_SPLIT = re.compile(r"\s(\d+)\.\s+")
 URL_RE = re.compile(r"https?://\S+")
@@ -35,6 +37,8 @@ def parse_pdf(path: Path):
     Handles: hard-wrapped URLs across lines, numbered lists, and trailing
     unnumbered plain URL lists appended after the numbered section.
     """
+    from pypdf import PdfReader
+
     reader = PdfReader(str(path))
     full = "".join((p.extract_text() or "") for p in reader.pages)
     # URL fragments wrap without spaces at line breaks, so joining is safe
@@ -66,8 +70,13 @@ AMP_HOST = re.compile(r"^(www[-.])?([a-z0-9-]+)\.cdn\.ampproject\.org$", re.I)
 
 
 def unwrap_amp(url: str) -> str:
-    """Recover the canonical URL from Google AMP-cache links."""
+    """Recover the canonical URL from Google AMP-cache and redirect links."""
     s = urlsplit(url)
+    # google.com/url?q=<target> click-tracking wrapper carries the target inline
+    if s.netloc.lower().endswith("google.com") and s.path == "/url":
+        for k, v in parse_qsl(s.query):
+            if k in ("q", "url") and v.startswith("http"):
+                return v
     m = re.match(r"^/amp/s/(.+)$", s.path)
     if s.netloc.lower().endswith("google.com") and m:
         rest = m.group(1)
@@ -193,7 +202,9 @@ TOPIC_RULES = [
     ("hardware",     r"cpu|gpu|nvidia|amd|intel|ssd|nas|mini-?pc|laptop|notebook|smartphone|galaxy|pixel|tablet|monitor|display|router|wifi"),
     ("data_science", r"data-?science|pandas|jupyter|notebook|dataset|analytics|visualization|statistics|knowledge-?graph|networkx|graph"),
     ("gaming",       r"pokemon|nintendo|playstation|xbox|steam|gaming|game"),
-    ("health",       r"fitness|sleep|health|garmin|watch|calisthenics"),
+    # NOT bare "watch": every YouTube URL contains /watch?v=, which made
+    # every video false-positive match "health" via this rule
+    ("health",       r"fitness|sleep|health|garmin|smartwatch|calisthenics"),
     ("travel",       r"airbnb|skyscanner|safari|booking|flight|hotel|reise|namibia|travel"),
 ]
 

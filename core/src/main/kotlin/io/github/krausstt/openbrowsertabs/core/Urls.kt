@@ -108,9 +108,15 @@ object UrlNormalizer {
     )
     private val AMP_LEFTOVERS = setOf("amp", "amp_gsa", "amp_js_v", "usqp")
 
-    /** Recover the canonical URL from Google AMP-cache links. */
+    /** Recover the canonical URL from Google AMP-cache and redirect links. */
     fun unwrapAmp(url: String): String {
         val s = urlsplit(url)
+        // google.com/url?q=<target> click-tracking wrapper carries the target inline
+        if (s.netloc.lowercase().endsWith("google.com") && s.path == "/url") {
+            parseQsl(s.query)
+                .firstOrNull { (k, v) -> (k == "q" || k == "url") && v.startsWith("http") }
+                ?.let { return it.second }
+        }
         val ampPath = Regex("^/amp/s/(.+)$").find(s.path)
         if (s.netloc.lowercase().endsWith("google.com") && ampPath != null) {
             var rest = ampPath.groupValues[1]

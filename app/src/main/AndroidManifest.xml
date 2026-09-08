@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- needed to resolve shortener links (share.google etc.) to their target -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- enrichment result after sharing a link (runtime permission on 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:label="OpenBrowserTabs"
         android:icon="@mipmap/ic_launcher"
@@ -10,12 +15,40 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- deep link to one entry: openbrowsertabs://link/<id>
+                 used by the enrichment notification and by external routing -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="openbrowsertabs" android:host="link" />
+            </intent-filter>
+
+            <!-- select text anywhere (e.g. an LLM answer) and send it here to
+                 attach it as a summary to one of your saved links -->
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
         </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <!-- Share target: appears in the Android share sheet for text/links -->
         <activity
@@ -24,6 +57,7 @@
             android:excludeFromRecents="true"
             android:noHistory="true"
             android:label="Tab speichern"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.OpenBrowserTabs.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

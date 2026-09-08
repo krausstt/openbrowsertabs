@@ -34,3 +34,25 @@ object LinkParser {
             }
             .distinctBy { it.canonicalUrl }
 }
+
+object LinkResolution {
+
+    /**
+     * If [link] is an opaque shortener (share.google etc.), resolve it over
+     * the network and re-run normalization/categorization on the target.
+     * Keeps the shared short URL as originalUrl for provenance. On failure
+     * the short link is returned unchanged — its pending-enrichment state
+     * lets a later background pass retry.
+     *
+     * Network I/O: callers must invoke this off the main thread.
+     */
+    fun resolveIfShortened(
+        link: ParsedLink,
+        fetcher: RedirectResolver.Fetcher = RedirectResolver.defaultFetcher,
+    ): ParsedLink {
+        if (!RedirectResolver.needsResolution(link.canonicalUrl)) return link
+        val target = RedirectResolver.resolve(link.canonicalUrl, fetcher) ?: return link
+        val resolved = LinkParser.parse(target).firstOrNull() ?: return link
+        return resolved.copy(originalUrl = link.originalUrl)
+    }
+}

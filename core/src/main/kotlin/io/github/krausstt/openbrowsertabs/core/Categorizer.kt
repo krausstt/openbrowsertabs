@@ -98,12 +98,21 @@ object Categorizer {
         "hardware" to Regex("cpu|gpu|nvidia|amd|intel|ssd|nas|mini-?pc|laptop|notebook|smartphone|galaxy|pixel|tablet|monitor|display|router|wifi"),
         "data_science" to Regex("data-?science|pandas|jupyter|notebook|dataset|analytics|visualization|statistics|knowledge-?graph|networkx|graph"),
         "gaming" to Regex("pokemon|nintendo|playstation|xbox|steam|gaming|game"),
-        "health" to Regex("fitness|sleep|health|garmin|watch|calisthenics"),
+        // NOT bare "watch": every YouTube URL contains /watch?v=, which made
+        // every video false-positive match "health" via this rule
+        "health" to Regex("fitness|sleep|health|garmin|smartwatch|calisthenics"),
         "travel" to Regex("airbnb|skyscanner|safari|booking|flight|hotel|reise|namibia|travel"),
     )
 
-    fun topics(url: String): List<String> {
-        val u = url.lowercase()
+    /**
+     * Matches the topic keyword rules against arbitrary text. Originally
+     * URL-only (slug keywords); works on any lowercase-able string, so
+     * callers with real page content (title/description/body) get far more
+     * accurate tags than opaque URLs (e.g. youtube.com/watch?v=<id>) can
+     * ever provide — video/opaque-URL hosts are exactly where this matters.
+     */
+    fun topics(text: String): List<String> {
+        val u = text.lowercase()
         val hits = TOPIC_RULES.filter { (_, re) -> re.containsMatchIn(u) }.map { it.first }
         return hits.ifEmpty { listOf("untagged") }
     }

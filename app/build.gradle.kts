@@ -10,17 +10,37 @@ android {
     namespace = "io.github.krausstt.openbrowsertabs"
     compileSdk = 36
 
+    // CI passes -PbuildNumber=<run number> so every build is a valid update
+    val buildNumber = (project.findProperty("buildNumber") as String?)?.toIntOrNull() ?: 1
+
     defaultConfig {
         applicationId = "io.github.krausstt.openbrowsertabs"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = buildNumber
+        versionName = "0.1.$buildNumber"
+    }
+
+    // consistent release signing in CI: keystore comes from GitHub secrets,
+    // decoded to a temp file whose path is exported as CI_KEYSTORE_PATH
+    val ciKeystorePath: String? = System.getenv("CI_KEYSTORE_PATH")
+    if (ciKeystorePath != null) {
+        signingConfigs {
+            create("ci") {
+                storeFile = file(ciKeystorePath)
+                storePassword = System.getenv("CI_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CI_KEY_ALIAS") ?: "openbrowsertabs"
+                keyPassword = System.getenv("CI_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (ciKeystorePath != null) {
+                signingConfig = signingConfigs.getByName("ci")
+            }
         }
     }
 
@@ -50,4 +70,5 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.work.runtime)
 }

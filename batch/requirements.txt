@@ -1,0 +1,8 @@
+# CPU-only: the runner has 2 vCPU / 7 GB and no GPU, and torch's CUDA wheels
+# would blow past the cache budget for no benefit
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1
+sentence-transformers==3.3.1
+scikit-learn==1.5.2
+hdbscan==0.8.40
+numpy<2
