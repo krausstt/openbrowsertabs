@@ -27,7 +27,9 @@ import io.github.krausstt.openbrowsertabs.core.Snippets
 import io.github.krausstt.openbrowsertabs.core.TextSimilarity
 import io.github.krausstt.openbrowsertabs.data.LinkEntity
 import io.github.krausstt.openbrowsertabs.data.LinkStore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 /**
@@ -41,7 +43,11 @@ class EnrichmentWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result {
+    // every step below is blocking: HttpURLConnection reads and SQLite calls.
+    // CoroutineWorker defaults to Dispatchers.Default, whose pool is sized to
+    // the CPU count — on a 2-core phone a handful of slow fetches can occupy
+    // all of it and stall unrelated work.
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val store = LinkStore(applicationContext)
         val notifyLinkId = inputData.getLong(KEY_LINK_ID, -1L)
         val batch = if (notifyLinkId > 0) {
@@ -60,7 +66,7 @@ class EnrichmentWorker(
         if (notifyLinkId <= 0 && store.pendingEnrichmentCount() > 0 && !sawTransient) {
             enqueueDrain(applicationContext)
         }
-        return if (sawTransient) Result.retry() else Result.success()
+        if (sawTransient) Result.retry() else Result.success()
     }
 
     /** @return true if the outcome was transient (leave pending, retry run) */

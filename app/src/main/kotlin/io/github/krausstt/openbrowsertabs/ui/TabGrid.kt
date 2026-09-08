@@ -19,6 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -154,36 +156,48 @@ fun TabCard(
  *
  * Only claims the gesture once a second finger is down, so single-finger
  * scrolling in the grid keeps working untouched.
+ *
+ * Keyed on `Unit`, not on `columns`: keying the pointer input on the value
+ * the gesture itself changes tore down and restarted the handler after every
+ * step, so one continuous pinch could never cross more than a single column
+ * boundary and the `accumulated` reset below never ran. The current column
+ * count is read through [rememberUpdatedState] instead, which keeps the
+ * gesture alive across the change.
  */
+@Composable
 fun Modifier.pinchToZoomColumns(
     columns: Int,
     min: Int = 1,
     max: Int = 4,
     // last position so the call site can use trailing-lambda syntax
     onColumnsChange: (Int) -> Unit,
-): Modifier = this.pointerInput(columns) {
-    var accumulated = 1f
-    awaitEachGesture {
-        awaitFirstDown(requireUnconsumed = false)
-        accumulated = 1f
-        var event: androidx.compose.ui.input.pointer.PointerEvent
-        do {
-            event = awaitPointerEvent()
-            if (event.changes.size >= 2) {
-                accumulated *= event.calculateZoom()
-                // spreading fingers = fewer, larger cards
-                val next = when {
-                    accumulated > 1.35f -> columns - 1
-                    accumulated < 0.74f -> columns + 1
-                    else -> columns
-                }.coerceIn(min, max)
-                if (next != columns) {
-                    onColumnsChange(next)
-                    accumulated = 1f
+): Modifier {
+    val currentColumns by rememberUpdatedState(columns)
+    val currentOnChange by rememberUpdatedState(onColumnsChange)
+    return this.pointerInput(Unit) {
+        var accumulated = 1f
+        awaitEachGesture {
+            awaitFirstDown(requireUnconsumed = false)
+            accumulated = 1f
+            var event: androidx.compose.ui.input.pointer.PointerEvent
+            do {
+                event = awaitPointerEvent()
+                if (event.changes.size >= 2) {
+                    accumulated *= event.calculateZoom()
+                    // spreading fingers = fewer, larger cards
+                    val next = when {
+                        accumulated > 1.35f -> currentColumns - 1
+                        accumulated < 0.74f -> currentColumns + 1
+                        else -> currentColumns
+                    }.coerceIn(min, max)
+                    if (next != currentColumns) {
+                        currentOnChange(next)
+                        accumulated = 1f
+                    }
+                    event.changes.forEach { it.consume() }
                 }
-                event.changes.forEach { it.consume() }
-            }
-        } while (event.changes.any { it.pressed })
+            } while (event.changes.any { it.pressed })
+        }
     }
 }
 

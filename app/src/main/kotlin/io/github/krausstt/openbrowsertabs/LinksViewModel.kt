@@ -15,6 +15,7 @@ import io.github.krausstt.openbrowsertabs.data.Space
 import io.github.krausstt.openbrowsertabs.export.Exporter
 import io.github.krausstt.openbrowsertabs.enrich.EnrichmentWorker
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -80,8 +81,20 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
         refresh()
     }
 
+    /**
+     * Re-read everything the screens show.
+     *
+     * Only one may be in flight: every keystroke in the search field calls
+     * this, and two overlapping reads finish in whatever order the database
+     * returns them — an older query's results would then overwrite a newer
+     * one's. Cancelling the previous run makes the last call win, which is
+     * the only ordering a user can predict.
+     */
+    private var refreshJob: Job? = null
+
     fun refresh() {
-        viewModelScope.launch {
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
             val s = _state.value
             val status = if (s.statusFilter == "all") null else s.statusFilter
             val snapshot = withContext(Dispatchers.IO) {
@@ -119,7 +132,7 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
                 spaceLinks = snapshot.spaceLinks,
                 attentionLinks = snapshot.rest,
                 curatedTotal = snapshot.curated,
-                stack = snapshot.stack,
+                stack = reconcileStack(snapshot.stack),
                 stackSize = if (_state.value.stackSize == 0) snapshot.stack.size
                 else _state.value.stackSize,
                 withoutContextCount = snapshot.withoutContext,
@@ -231,6 +244,22 @@ class LinksViewModel(application: Application) : AndroidViewModel(application) {
         )
         val byId = candidates.associateBy { it.id }
         return chosen.mapNotNull { byId[it] }
+    }
+
+    /**
+     * Fold a stack read before the database round-trip back into the taps
+     * that landed during it.
+     *
+     * [refresh] captures the stack ids up front, so an answer given while it
+     * was running is missing from what it brings back — and re-adding that
+     * card would undo the one thing the screen promises: you answer, it goes
+     * away. The live state wins; the snapshot only refreshes the rows.
+     */
+    private fun reconcileStack(fromSnapshot: List<LinkEntity>): List<LinkEntity> {
+        val current = _state.value
+        if (current.stackSize == 0) return fromSnapshot
+        val live = current.stack.mapTo(mutableSetOf()) { it.id }
+        return fromSnapshot.filter { it.id in live }
     }
 
     private fun startOfToday(): Long {

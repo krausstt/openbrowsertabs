@@ -158,11 +158,19 @@ def label_for(members: list[int], by_id: dict[int, dict]) -> tuple[str, list[str
 
 # ----------------------------------------------------------------- edges
 def top_edges(vectors, ids):
+    """Each node's nearest neighbours, as undirected edges.
+
+    Top-k is *not* symmetric: B can be among A's six nearest without A being
+    among B's. Dropping the pair whenever src > dst therefore threw away real
+    edges rather than de-duplicating them — a strong association was kept or
+    lost depending on which way the two ids happened to sort. The pair is
+    canonicalised instead, so it survives no matter which side found it.
+    """
     import numpy as np
 
     sims = vectors @ vectors.T
     np.fill_diagonal(sims, -1.0)
-    out = []
+    best: dict[tuple, float] = {}
     for i, src in enumerate(ids):
         order = np.argsort(-sims[i])[:TOP_K_EDGES]
         for j in order:
@@ -170,9 +178,12 @@ def top_edges(vectors, ids):
             if weight < MIN_EDGE_WEIGHT:
                 continue
             dst = ids[j]
-            if src < dst:                      # undirected: emit once
-                out.append((src, dst, weight))
-    return out
+            if src == dst:
+                continue
+            key = (src, dst) if src < dst else (dst, src)
+            if weight > best.get(key, -1.0):
+                best[key] = weight
+    return [(a, b, w) for (a, b), w in best.items()]
 
 
 # ------------------------------------------------------------------ main
@@ -226,9 +237,15 @@ def main() -> int:
                 emit({"type": "vocab", "kind": "topic", "term": term,
                       "canonical": term.replace(" ", "_").replace("-", "_")})
 
-        if noise:
-            emit({"type": "cluster", "cid": cid, "label": "Ohne Cluster",
-                  "members": noise[:MAX_CLUSTER]})
+        # chunked like every other cluster: truncating here silently dropped
+        # every link past the 50th out of the run's output altogether
+        for part, chunk in enumerate(
+            [noise[i:i + MAX_CLUSTER] for i in range(0, len(noise), MAX_CLUSTER)]
+        ):
+            suffix = f" ({part + 1})" if len(noise) > MAX_CLUSTER else ""
+            emit({"type": "cluster", "cid": cid, "label": "Ohne Cluster" + suffix,
+                  "members": chunk})
+            cid += 1
 
     print(f"wrote {dict(written)} -> {args.outfile}", file=sys.stderr)
     return 0

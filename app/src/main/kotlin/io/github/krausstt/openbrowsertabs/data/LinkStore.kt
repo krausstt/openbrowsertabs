@@ -371,8 +371,9 @@ class LinkStore(context: Context) :
             generateSequence { if (c.moveToNext()) c.toSpace() else null }.toList()
         }
 
-    /** Links matching a space's saved filter: any tag hit OR any category hit. */
-    fun linksInSpace(space: Space, status: String? = "open"): List<LinkEntity> {
+    /** The saved filter as SQL: any tag hit OR any category hit.
+     *  Null when the space matches nothing at all. */
+    private fun spaceWhere(space: Space, status: String?): Pair<String, Array<String>>? {
         val where = StringBuilder("1=1")
         val args = ArrayList<String>()
         if (status != null) {
@@ -387,16 +388,30 @@ class LinkStore(context: Context) :
         space.matchCategories.forEach {
             clauses.add("category = ?"); args.add(it)
         }
-        if (clauses.isEmpty()) return emptyList()
+        if (clauses.isEmpty()) return null
         where.append(" AND (").append(clauses.joinToString(" OR ")).append(")")
+        return where.toString() to args.toTypedArray()
+    }
+
+    /** Links matching a space's saved filter: any tag hit OR any category hit. */
+    fun linksInSpace(space: Space, status: String? = "open"): List<LinkEntity> {
+        val (where, args) = spaceWhere(space, status) ?: return emptyList()
         return readableDatabase.rawQuery(
             "SELECT $entityColumns FROM links WHERE $where ORDER BY last_seen_at DESC",
-            args.toTypedArray(),
+            args,
         ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
     }
 
-    fun spaceCount(space: Space, status: String? = "open"): Int =
-        linksInSpace(space, status).size
+    /** COUNT rather than `linksInSpace(...).size`: this runs once per space on
+     *  every refresh, and a refresh happens on every keystroke in the search
+     *  field — building full entities only to discard them is the difference
+     *  between a count and a full table read per space. */
+    fun spaceCount(space: Space, status: String? = "open"): Int {
+        val (where, args) = spaceWhere(space, status) ?: return 0
+        return readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM links WHERE $where", args,
+        ).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+    }
 
     fun setSpacePinned(id: Long, pinned: Boolean) {
         val values = ContentValues().apply { put("pinned", if (pinned) 1 else 0) }
@@ -578,7 +593,15 @@ class LinkStore(context: Context) :
                 "AND category != 'search_query' " +
                 "AND (reaction IS NULL OR user_note IS NULL " +
                 "     OR topics = '' OR topics = 'untagged') " +
-                "ORDER BY last_seen_at DESC LIMIT ?",
+                // the LIMIT runs before InboxBatch gets to rank, so the SQL has
+                // to agree with it about what matters most: an entry you
+                // reacted to but never tagged is the batch's top priority and
+                // must not fall off the end of the window as it ages
+                "ORDER BY CASE WHEN (reaction IS NOT NULL " +
+                "                    OR (user_note IS NOT NULL AND user_note != '')) " +
+                "              AND (topics = '' OR topics = 'untagged') " +
+                "              AND (user_tags IS NULL OR user_tags = '') " +
+                "         THEN 0 ELSE 1 END, last_seen_at DESC LIMIT ?",
             arrayOf(limit.toString()),
         ).use { c -> generateSequence { if (c.moveToNext()) c.toEntity() else null }.toList() }
 
